@@ -27,6 +27,6 @@ func main() {
 		w.Write([]byte(IndexContent))
 	})
 
-	log.Println("Listening on", "0.0.0.0:8088")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8088", nil))
+	log.Println("Listening on", "127.0.0.1:8088")
+	log.Fatal(http.ListenAndServe("127.0.0.1:8088", nil))
 }
