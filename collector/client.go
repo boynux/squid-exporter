@@ -36,6 +36,11 @@ func NewCacheObjectClient(hostname string, port int) *CacheObjectClient {
 
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	conn, err := connect(c.hostname, c.port)
+
+	if err != nil {
+		return types.Counters{}, err
+	}
+
 	r, err := get(conn, "counters")
 
 	var counters types.Counters
