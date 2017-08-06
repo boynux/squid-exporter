@@ -1,0 +1,11 @@
+{
+	"ImportPath": "squid-exporter",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/go-openapi/errors",
+			"Rev": "03cfca65330da08a5a440053faf994a3c682b5bf"
+		}
+	]
+}
