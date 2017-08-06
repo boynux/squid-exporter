@@ -4,11 +4,6 @@ import (
 	"fmt"
 	"log"
 	"squid-exporter/collector"
-	"squid-exporter/types"
-	"strconv"
-	"strings"
-
-	"github.com/go-openapi/errors"
 )
 
 func main() {
@@ -25,21 +20,4 @@ func main() {
 	}
 
 	return
-}
-
-func decodeCounterStrings(line string) (*types.Counter, error) {
-	if equal := strings.Index(line, "="); equal >= 0 {
-		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
-			value := ""
-			if len(line) > equal {
-				value = strings.TrimSpace(line[equal+1:])
-			}
-
-			if i, err := strconv.ParseFloat(value, 64); err == nil {
-				return &types.Counter{key, i}, nil
-			}
-		}
-	}
-
-	return nil, errors.New(1, "could not parse line")
 }
