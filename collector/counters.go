@@ -2,6 +2,7 @@ package collector
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -19,6 +20,10 @@ var squidCounters = []SquidCounter{
 	{"client_http", "kbytes_in", "The total number of client kbytes recevied"},
 	{"client_http", "kbytes_out", "The total number of client kbytes transfered"},
 	{"client_http", "hit_kbytes_out", "The total number of client kbytes cache hit"},
+	{"server.http", "requests", "The total number of server http requests"},
+	{"server.http", "errors", "The total number of server http errors"},
+	{"server.http", "kbytes_in", "The total number of server kbytes recevied"},
+	{"server.http", "kbytes_out", "The total number of server kbytes transfered"},
 }
 
 func generateSquidCounters() DescMap {
@@ -28,7 +33,7 @@ func generateSquidCounters() DescMap {
 		counter := squidCounters[i]
 
 		counters[fmt.Sprintf("%s.%s", counter.Section, counter.Counter)] = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, counter.Section, counter.Counter),
+			prometheus.BuildFQName(namespace, strings.Replace(counter.Section, ".", "_", -1), counter.Counter),
 			counter.Description,
 			[]string{}, nil,
 		)
