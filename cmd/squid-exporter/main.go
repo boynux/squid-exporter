@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"squid-exporter/collector"
@@ -17,16 +18,19 @@ const IndexContent = `<html>
              </html>`
 
 func main() {
-	e := collector.New("localhost", 3129)
+	config := NewConfig()
+
+	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", config.SquidHostname, config.SquidPort))
+	e := collector.New(config.SquidHostname, config.SquidPort)
 
 	prometheus.MustRegister(e)
 
 	// Serve metrics
-	http.Handle("/metrics", prometheus.Handler())
+	http.Handle(config.MetricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(IndexContent))
 	})
 
-	log.Println("Listening on", "127.0.0.1:8088")
-	log.Fatal(http.ListenAndServe("127.0.0.1:8088", nil))
+	log.Println("Listening on", fmt.Sprintf("%s:%d", config.ListenAddress, config.ListenPort))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", config.ListenAddress, config.ListenPort), nil))
 }
