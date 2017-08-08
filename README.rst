@@ -1,2 +1,0 @@
-Squid Prometheus exporter
------------------------
