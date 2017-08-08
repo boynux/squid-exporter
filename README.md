@@ -17,7 +17,7 @@ Configure Prometheus to scrape metrics from `localhost:9301/metrics`
       target_groups:
         - targets: ['localhost:9301']
 
-To get all the paramteres
+To get all the parameteres
 
     squid-exprter -help
 
@@ -31,7 +31,7 @@ Features:
   -  [ ]  Server ICP
   -  [ ]  Other
 - [ ] Histograms
-- [ ] Other metics
+- [ ] Other metrics
 - [ ] Squid Authentication
 
 Contribution:
