@@ -28,8 +28,15 @@ Features:
 - [ ] Expose Squid counters
   -  [x] Client HTTP
   -  [x] Server HTTP
-  -  [ ]  Server ICP
-  -  [ ]  Other
+  -  [x] Server ALL
+  -  [x] Server FTP
+  -  [x] Server Other
+  -  [ ] ICP
+  -  [ ] CD
+  -  [x] Swap
+  -  [ ] Page Faults
+  -  [ ] Others
+  -
 - [ ] Histograms
 - [ ] Other metrics
 - [ ] Squid Authentication
