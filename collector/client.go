@@ -7,9 +7,10 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"squid-exporter/types"
 	"strconv"
 	"strings"
+
+	"github.com/boynux/squid-exporter/types"
 )
 
 type CacheObjectClient struct {

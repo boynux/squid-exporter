@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"squid-exporter/collector"
 
+	"github.com/boynux/squid-exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
