@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: test
+all: test build
 
 BUILD_PATH = ./cmd/squid-exporter
 EXE = ./bin/squid-exporter
