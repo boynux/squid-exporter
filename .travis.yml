@@ -1,1 +1,9 @@
 language: go
+
+secure: "oRUfXQ4ShSrgk9MdBQ5i/SFxtfEaNbqeJocl+D9+RSq73gWcZbwJDVgTExxessLypHxnTDSSWdCi9dMkEiwiSE0HmwXAWhDcYTrWqT1kQllMmEX80qD4ZpSKNUUl8OrSjf1kkvxwFaBn9gfvyK1ZpF55Yjf/DphR0x3u/ct/iRoEyokGjqzrio/HQc/CJ66SVYGWh614X0wol/Z3RrniIFkxL8OQzAPjMBDqiqCpuXvQsBMh4kbUel5Gf8v3uvwHRxIIO+EMk41X0BGQX5/kcongxL38a9rS7PjWX5IWaLn0UYAINre20w9L/Rmsa0pT+r6gXRQx7PxcOYSittrtBBa3WDUWtxuQ7XOrLlKGC48TdCAEGephw0Wcp6zvGC913wXkvQ/rg97rfDstxVKZK+MjdqPvpA/ZfBzJtfQTsX/dWWwCEWz+H5WZizv585D+oCyexSMOlUPEE+KGRMqcLtGV/+0CQ4KHa7ka1STbZMqDmpjkf6ubSdE8RhWrXQn3/oVU6PUzRUvko0K56lH7Ggc9ofLy3fDN4eaLPLxYm9mARS0+SuCDSGlz80lfXd2FQRtYaC8Vy4gDfkUgJD8v+mT+g0f8G8eYrxEOMgsGl2iLPLisKDEIaBP/batotQ4JIKQAEho56Qzvq1BUoO54xDkeZpS6XYWdVIgQGnjVSTg="
+
+deploy:
+  provider: release
+  api_key: $GITHUB_APIKEY
+  file: bin/squid-exporter
+  skip_cleanup: true
