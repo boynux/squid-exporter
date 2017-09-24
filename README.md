@@ -14,8 +14,8 @@ Simple usage:
 Configure Prometheus to scrape metrics from `localhost:9301/metrics`
 
     - job_name: squid
-      # If prometheus-node-exporter is installed, grab stats about the local
-      # machine by default.
+      # squid-exporter is installed, grab stats about the local
+      # squid instance.
       target_groups:
         - targets: ['localhost:9301']
 
