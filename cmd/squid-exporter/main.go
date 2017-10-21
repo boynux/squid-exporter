@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const IndexContent = `<html>
+const indexContent = `<html>
              <head><title>Squid Exporter</title></head>
              <body>
              <h1>Squid Exporter</h1>
@@ -28,7 +28,7 @@ func main() {
 	// Serve metrics
 	http.Handle(config.MetricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(IndexContent))
+		w.Write([]byte(indexContent))
 	})
 
 	log.Println("Listening on", fmt.Sprintf("%s:%d", config.ListenAddress, config.ListenPort))

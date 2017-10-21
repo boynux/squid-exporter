@@ -13,20 +13,23 @@ import (
 	"github.com/boynux/squid-exporter/types"
 )
 
+/*CacheObjectClient holds information about squid manager */
 type CacheObjectClient struct {
 	hostname string
 	port     int
 	headers  map[string]string
 }
 
+/*SquidClient provides functionality to fetch squid metrics */
 type SquidClient interface {
 	GetCounters() (types.Counters, error)
 }
 
 const (
-	RequestProtocol = "GET cache_object://localhost/%s HTTP/1.0"
+	requestProtocol = "GET cache_object://localhost/%s HTTP/1.0"
 )
 
+/*NewCacheObjectClient initializes a new cache client */
 func NewCacheObjectClient(hostname string, port int) *CacheObjectClient {
 	return &CacheObjectClient{
 		hostname,
@@ -35,6 +38,7 @@ func NewCacheObjectClient(hostname string, port int) *CacheObjectClient {
 	}
 }
 
+/*GetCounters fetches counters from squid cache manager */
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	conn, err := connect(c.hostname, c.port)
 
@@ -72,7 +76,7 @@ func connect(hostname string, port int) (net.Conn, error) {
 
 func get(conn net.Conn, path string) (*http.Response, error) {
 	rBody := []string{
-		fmt.Sprintf(RequestProtocol, path),
+		fmt.Sprintf(requestProtocol, path),
 		"Host: localhost",
 		"User-Agent: squidclient/3.5.12",
 		"Accept: */*",

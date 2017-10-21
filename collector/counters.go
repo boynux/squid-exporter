@@ -7,13 +7,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type SquidCounter struct {
+type squidCounter struct {
 	Section     string
 	Counter     string
 	Description string
 }
 
-var squidCounters = []SquidCounter{
+var squidCounters = []squidCounter{
 	{"client_http", "requests", "The total number of client requests"},
 	{"client_http", "hits", "The total number of client cache hits"},
 	{"client_http", "errors", "The total number of client http errors"},
@@ -46,8 +46,8 @@ var squidCounters = []SquidCounter{
 	{"swap", "files_cleaned", "The total number of server other kbytes recevied"},
 }
 
-func generateSquidCounters() DescMap {
-	counters := DescMap{}
+func generateSquidCounters() descMap {
+	counters := descMap{}
 
 	for i := range squidCounters {
 		counter := squidCounters[i]

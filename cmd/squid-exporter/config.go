@@ -12,7 +12,8 @@ const (
 	defaultSquidPort     = 3128
 )
 
-type config struct {
+/*Config configurations for exporter */
+type Config struct {
 	ListenAddress string
 	ListenPort    int
 	MetricPath    string
@@ -21,8 +22,9 @@ type config struct {
 	SquidPort     int
 }
 
-func NewConfig() *config {
-	c := &config{}
+/*NewConfig creates a new config object from command line args */
+func NewConfig() *Config {
+	c := &Config{}
 
 	flag.StringVar(&c.ListenAddress, "listen-address", defaultListenAddress, "Address to bind exporter")
 	flag.IntVar(&c.ListenPort, "listen-port", defaultListenPort, "Port to bind exporter")

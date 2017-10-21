@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/common/version"
 )
 
-type DescMap map[string]*prometheus.Desc
+type descMap map[string]*prometheus.Desc
 
 const (
 	namespace = "squid"
@@ -22,9 +22,10 @@ var (
 		[]string{"region"}, nil,
 	)
 
-	counters DescMap
+	counters descMap
 )
 
+/*Exporter entry point to squid exporter */
 type Exporter struct {
 	client SquidClient
 
@@ -32,6 +33,7 @@ type Exporter struct {
 	port     int
 }
 
+/*New initializes a new exporter */
 func New(hostname string, port int) *Exporter {
 	c := NewCacheObjectClient(hostname, port)
 
@@ -54,6 +56,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 }
 
+/*Collect fetches metrics from squid manager and pushes them to promethus */
 func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	prometheus.MustNewConstMetric(up, prometheus.GaugeValue, 0, e.hostname)
 
