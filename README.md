@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/boynux/squid-exporter.svg?branch=master)](https://travis-ci.org/boynux/squid-exporter)
+[![Go Report Card](https://goreportcard.com/badge/github.com/boynux/squid-exporter)](https://goreportcard.com/report/github.com/boynux/squid-exporter)
 
 Squid Prometheus exporter
 --------------------------
