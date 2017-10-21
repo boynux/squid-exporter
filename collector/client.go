@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -64,7 +65,11 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		}
 
 		c, err := decodeCounterStrings(line)
-		counters = append(counters, c)
+		if err != nil {
+			log.Println(err)
+		} else {
+			counters = append(counters, c)
+		}
 	}
 
 	return counters, err
