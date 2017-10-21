@@ -6,7 +6,7 @@ import (
 
 const (
 	defaultListenAddress = "127.0.0.1"
-	defaultListernPort   = 9301
+	defaultListenPort    = 9301
 	defaultMetricsPath   = "/metrics"
 	defaultSquidHostname = "localhost"
 	defaultSquidPort     = 3128
@@ -24,8 +24,8 @@ type config struct {
 func NewConfig() *config {
 	c := &config{}
 
-	flag.StringVar(&c.ListenAddress, "listern-address", defaultListenAddress, "Address to bind exporter")
-	flag.IntVar(&c.ListenPort, "listern-port", defaultListernPort, "Port to bind exporter")
+	flag.StringVar(&c.ListenAddress, "listen-address", defaultListenAddress, "Address to bind exporter")
+	flag.IntVar(&c.ListenPort, "listen-port", defaultListenPort, "Port to bind exporter")
 	flag.StringVar(&c.MetricPath, "metrics-path", defaultMetricsPath, "Metrics path to expose prometheus metrics")
 
 	flag.StringVar(&c.SquidHostname, "squid-hostname", defaultSquidHostname, "Squid hostname")
