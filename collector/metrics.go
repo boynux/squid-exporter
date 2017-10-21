@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"log"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -64,6 +65,8 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value)
 			}
 		}
+	} else {
+		log.Println("Could not fetch metrics from squid instance: ", err)
 	}
 }
 
