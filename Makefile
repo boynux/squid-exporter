@@ -13,6 +13,9 @@ test:
 
 build: $(EXE)
 
+docker:
+	docker build -t squid-exporter .
+
 clean:
 	rm -f $(EXE)
 
