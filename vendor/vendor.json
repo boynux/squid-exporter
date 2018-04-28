@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "Qk0BCC6kQeGY25VEVUpiOleRcik=",
+			"path": "github.com/boynux/squid-exporter/cmd/squid-exporter",
+			"revision": "6dcf7c0169956b09568fbef161445b8bae5d00e4",
+			"revisionTime": "2017-10-21T19:50:44Z"
+		},
+		{
+			"checksumSHA1": "ZGf7STYU2I6P1Aj6l4q/pBQTP+o=",
+			"path": "github.com/boynux/squid-exporter/collector",
+			"revision": "6dcf7c0169956b09568fbef161445b8bae5d00e4",
+			"revisionTime": "2017-10-21T19:50:44Z"
+		},
+		{
+			"checksumSHA1": "BTfM0VqmT18LCyiZzeJWc/M78pQ=",
+			"path": "github.com/boynux/squid-exporter/types",
+			"revision": "6dcf7c0169956b09568fbef161445b8bae5d00e4",
+			"revisionTime": "2017-10-21T19:50:44Z"
+		}
+	],
+	"rootPath": "github.com/boynux/squid-exporter"
+}
