@@ -8,4 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux go install -a -ldflags '-extldflags "-static"' .
 
 FROM scratch
 COPY --from=builder /go/bin/squid-exporter /usr/local/bin/squid-exporter
+
+EXPOSE 9301
+
 ENTRYPOINT ["/usr/local/bin/squid-exporter"]
