@@ -33,7 +33,7 @@ Basic setup assuming Squid is running on the same machine:
 
 Setup with Squid running on a different host
 
-    docker run -p 9301:9301 -d boynux/squid-exporter -squid-hostname "192.168.0.2" -squid-port 3128 -listen-port "0.0.0.0"
+    docker run -p 9301:9301 -d boynux/squid-exporter -squid-hostname "192.168.0.2" -squid-port 3128 -listen-address "0.0.0.0"
 
 Features:
 ---------
