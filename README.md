@@ -25,6 +25,16 @@ To get all the parameteres
     squid-exprter -help
 
 
+Usage with docker:
+------
+Basic setup assuming Squid is running on the same machine:
+
+    docker run --net=host -d boynux/squid-exporter
+
+Setup with Squid running on a different host
+
+    docker run -p 9301:9301 -d boynux/squid-exporter -squid-hostname "192.168.0.2" -squid-port 3128 -listen-address "0.0.0.0"
+
 Features:
 ---------
 

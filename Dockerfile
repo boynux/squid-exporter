@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:alpine as builder
 
 WORKDIR /go/src/github.com/boynux/squid-exporter
 COPY . .
@@ -6,6 +6,9 @@ COPY . .
 # Compile the binary statically, so it can be run without libraries.
 RUN CGO_ENABLED=0 GOOS=linux go install -a -ldflags '-extldflags "-static"' .
 
-FROM alpine
-COPY --from=0 /go/bin/squid-exporter /usr/local/bin/squid-exporter
+FROM scratch
+COPY --from=builder /go/bin/squid-exporter /usr/local/bin/squid-exporter
+
+EXPOSE 9301
+
 ENTRYPOINT ["/usr/local/bin/squid-exporter"]
