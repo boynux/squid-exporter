@@ -102,11 +102,16 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 				value = strings.TrimSpace(line[equal+1:])
 			}
 
+			// Remove additional formating string from `sample_time`
+			if slices := strings.Split(value, " "); len(slices) > 0 {
+				value = slices[0]
+			}
+
 			if i, err := strconv.ParseFloat(value, 64); err == nil {
 				return types.Counter{key, i}, nil
 			}
 		}
 	}
 
-	return types.Counter{}, errors.New("could not parse line")
+	return types.Counter{}, errors.New("could not parse line: " + line)
 }
