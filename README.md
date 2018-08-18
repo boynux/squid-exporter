@@ -35,6 +35,20 @@ Setup with Squid running on a different host
 
     docker run -p 9301:9301 -d boynux/squid-exporter -squid-hostname "192.168.0.2" -squid-port 3128 -listen-address "0.0.0.0"
 
+
+Build:
+--------
+
+This project is written in Go, so all the usual methods for building (or cross compiling) a Go application would work.
+
+If you are not very familiar with Go you can download the binary from [releases](https://github.com/boynux/squid-exporter/releases).
+
+Or build it for your OS:
+
+`go install https://github.com/boynux/squid-exporter`
+
+then you can find the binary in: `$GOPATH/bin/squid-exporter`
+
 Features:
 ---------
 
