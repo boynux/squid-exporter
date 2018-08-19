@@ -6,7 +6,7 @@ EXE = ./bin/squid-exporter
 SRC = $(shell find ./ -type f -name '*.go')
 
 $(EXE): $(SRC)
-	go build -o $(EXE) .
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-s -w -static"' -o $(EXE) .
 
 test:
 	go test -v ./...
