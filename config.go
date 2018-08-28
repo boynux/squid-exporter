@@ -20,6 +20,8 @@ type Config struct {
 
 	SquidHostname string
 	SquidPort     int
+	Login         string
+	Password      string
 }
 
 /*NewConfig creates a new config object from command line args */
@@ -32,6 +34,9 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.SquidHostname, "squid-hostname", defaultSquidHostname, "Squid hostname")
 	flag.IntVar(&c.SquidPort, "squid-port", defaultSquidPort, "Squid port to read metrics")
+
+	flag.StringVar(&c.Login, "squid-login", "", "Login to squid service")
+	flag.StringVar(&c.Password, "squid-password", "", "Password to squid service")
 
 	flag.Parse()
 

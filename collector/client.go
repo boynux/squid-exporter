@@ -2,23 +2,24 @@ package collector
 
 import (
 	"bufio"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/boynux/squid-exporter/types"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/boynux/squid-exporter/types"
 )
 
 /*CacheObjectClient holds information about squid manager */
 type CacheObjectClient struct {
-	hostname string
-	port     int
-	headers  map[string]string
+	hostname        string
+	port            int
+	basicAuthString string
+	headers         map[string]string
 }
 
 /*SquidClient provides functionality to fetch squid metrics */
@@ -30,11 +31,20 @@ const (
 	requestProtocol = "GET cache_object://localhost/%s HTTP/1.0"
 )
 
+func buildBasicAuthString(login string, password string) string {
+	if len(login) == 0 {
+		return ""
+	} else {
+		return base64.StdEncoding.EncodeToString([]byte(login + ":" + password))
+	}
+}
+
 /*NewCacheObjectClient initializes a new cache client */
-func NewCacheObjectClient(hostname string, port int) *CacheObjectClient {
+func NewCacheObjectClient(hostname string, port int, login string, password string) *CacheObjectClient {
 	return &CacheObjectClient{
 		hostname,
 		port,
+		buildBasicAuthString(login, password),
 		map[string]string{},
 	}
 }
@@ -47,7 +57,7 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		return types.Counters{}, err
 	}
 
-	r, err := get(conn, "counters")
+	r, err := get(conn, "counters", c.basicAuthString)
 
 	var counters types.Counters
 
@@ -79,15 +89,16 @@ func connect(hostname string, port int) (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port))
 }
 
-func get(conn net.Conn, path string) (*http.Response, error) {
+func get(conn net.Conn, path string, basicAuthString string) (*http.Response, error) {
 	rBody := []string{
 		fmt.Sprintf(requestProtocol, path),
 		"Host: localhost",
 		"User-Agent: squidclient/3.5.12",
-		"Accept: */*",
-		"\r\n",
 	}
-
+	if len(basicAuthString) > 0 {
+		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
+	}
+	rBody = append(rBody, "Accept: */*", "\r\n")
 	request := strings.Join(rBody, "\r\n")
 
 	fmt.Fprintf(conn, request)
