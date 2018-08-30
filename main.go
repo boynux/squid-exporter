@@ -31,6 +31,6 @@ func main() {
 		w.Write([]byte(indexContent))
 	})
 
-	log.Println("Listening on", fmt.Sprintf("%s:%d", config.ListenAddress, config.ListenPort))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", config.ListenAddress, config.ListenPort), nil))
+	log.Println("Listening on", fmt.Sprintf("%s", config.ListenAddress))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", config.ListenAddress), nil))
 }
