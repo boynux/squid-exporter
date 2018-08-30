@@ -6,6 +6,8 @@ Squid Prometheus exporter
 
 Exports squid metrics in Prometheus format
 
+**NOTE**: From release 1.0 metric names and some parameters has changed. Make sure you check the docs and update your deployments accordingly!
+
 Usage:
 ------
 Simple usage:
