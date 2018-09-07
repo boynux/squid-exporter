@@ -43,7 +43,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1536353269994,
+  "iteration": 1536353270000,
   "links": [],
   "panels": [
     {
@@ -419,14 +419,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "squid_client_http_requests_total",
+          "expr": "rate(squid_client_http_requests_total[5m])",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Total Requests",
           "refId": "B"
         },
         {
-          "expr": "squid_client_http_hits_total",
+          "expr": "rate(squid_client_http_hits_total[5m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -434,7 +435,7 @@
           "refId": "A"
         },
         {
-          "expr": "squid_client_http_errors_total",
+          "expr": "rate(squid_client_http_errors_total[5m])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total Errors",
@@ -518,7 +519,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "squid_client_http_kbytes_in_kbytes_total * -1",
+          "expr": "rate(squid_client_http_kbytes_in_kbytes_total[5m]) * -1",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -526,14 +527,14 @@
           "refId": "A"
         },
         {
-          "expr": "squid_client_http_kbytes_out_kbytes_total",
+          "expr": "rate(squid_client_http_kbytes_out_kbytes_total[5m])",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "HTTP Traffic Out",
           "refId": "B"
         },
         {
-          "expr": "squid_client_http_hit_kbytes_out_bytes_total",
+          "expr": "rate(squid_client_http_hit_kbytes_out_bytes_total[5m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -635,5 +636,5 @@
   "timezone": "",
   "title": "Squid Sample Dashboard",
   "uid": "yRc_Bj2ik",
-  "version": 2
+  "version": 3
 }
