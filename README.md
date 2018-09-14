@@ -65,7 +65,6 @@ Features:
   -  [x] Swap
   -  [ ] Page Faults
   -  [ ] Others
-  -
 - [ ] Histograms
 - [ ] Other metrics
 - [ ] Squid Authentication
