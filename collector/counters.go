@@ -39,7 +39,7 @@ var squidCounters = []squidCounter{
 
 	{"server.other", "requests", "total", "The total number of server other requests"},
 	{"server.other", "errors", "total", "The total number of server other errors"},
-	{"server.other", "kbytes_in", "kbytes_totla", "The total number of server other kbytes recevied"},
+	{"server.other", "kbytes_in", "kbytes_total", "The total number of server other kbytes recevied"},
 	{"server.other", "kbytes_out", "kbytes_total", "The total number of server other kbytes transferred"},
 
 	{"swap", "ins", "total", "The total number of server other requests"},
