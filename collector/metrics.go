@@ -34,8 +34,8 @@ type Exporter struct {
 }
 
 /*New initializes a new exporter */
-func New(hostname string, port int) *Exporter {
-	c := NewCacheObjectClient(hostname, port)
+func New(hostname string, port int, login string, password string) *Exporter {
+	c := NewCacheObjectClient(hostname, port, login, password)
 
 	return &Exporter{
 		c,

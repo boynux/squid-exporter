@@ -19,9 +19,8 @@ const indexContent = `<html>
 
 func main() {
 	config := NewConfig()
-
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", config.SquidHostname, config.SquidPort))
-	e := collector.New(config.SquidHostname, config.SquidPort)
+	e := collector.New(config.SquidHostname, config.SquidPort, config.Login, config.Password)
 
 	prometheus.MustRegister(e)
 
