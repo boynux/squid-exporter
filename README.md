@@ -67,7 +67,7 @@ Features:
   -  [ ] Others
 - [ ] Histograms
 - [ ] Other metrics
-- [ ] Squid Authentication
+- [x] Squid Authentication (Basic Auth)
 
 Contribution:
 -------------
