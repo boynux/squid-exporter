@@ -58,7 +58,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 /*Collect fetches metrics from squid manager and pushes them to promethus */
 func (e *Exporter) Collect(c chan<- prometheus.Metric) {
-	prometheus.MustNewConstMetric(up, prometheus.GaugeValue, 0, e.hostname)
+	c <- prometheus.MustNewConstMetric(up, prometheus.GaugeValue, 0, e.hostname)
 
 	insts, err := e.client.GetCounters()
 
