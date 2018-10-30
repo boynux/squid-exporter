@@ -16,12 +16,6 @@ const (
 )
 
 var (
-	up = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "up"),
-		"Was the last query of squid successful?",
-		[]string{"region"}, nil,
-	)
-
 	counters descMap
 )
 
@@ -31,6 +25,8 @@ type Exporter struct {
 
 	hostname string
 	port     int
+
+	up *prometheus.GaugeVec
 }
 
 /*New initializes a new exporter */
@@ -42,13 +38,19 @@ func New(hostname string, port int, login string, password string) *Exporter {
 
 		hostname,
 		port,
+
+		prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "up",
+			Help:      "Was the last query of squid successful?",
+		}, []string{"region"}),
 	}
 }
 
 // Describe describes all the metrics ever exported by the ECS exporter. It
 // implements prometheus.Collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	ch <- up
+	e.up.Describe(ch)
 
 	for _, v := range counters {
 		ch <- v
@@ -58,19 +60,20 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 /*Collect fetches metrics from squid manager and pushes them to promethus */
 func (e *Exporter) Collect(c chan<- prometheus.Metric) {
-	c <- prometheus.MustNewConstMetric(up, prometheus.GaugeValue, 0, e.hostname)
-
 	insts, err := e.client.GetCounters()
 
 	if err == nil {
+		e.up.With(prometheus.Labels{"region": e.hostname}).Set(1)
 		for i := range insts {
 			if d, ok := counters[insts[i].Key]; ok {
 				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value)
 			}
 		}
 	} else {
+		e.up.With(prometheus.Labels{"region": e.hostname}).Set(0)
 		log.Println("Could not fetch metrics from squid instance: ", err)
 	}
+	e.up.Collect(c)
 }
 
 func init() {
