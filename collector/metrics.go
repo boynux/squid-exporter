@@ -43,7 +43,7 @@ func New(hostname string, port int, login string, password string) *Exporter {
 			Namespace: namespace,
 			Name:      "up",
 			Help:      "Was the last query of squid successful?",
-		}, []string{"region"}),
+		}, []string{"host"}),
 	}
 }
 
@@ -63,14 +63,14 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	insts, err := e.client.GetCounters()
 
 	if err == nil {
-		e.up.With(prometheus.Labels{"region": e.hostname}).Set(1)
+		e.up.With(prometheus.Labels{"host": e.hostname}).Set(1)
 		for i := range insts {
 			if d, ok := counters[insts[i].Key]; ok {
 				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value)
 			}
 		}
 	} else {
-		e.up.With(prometheus.Labels{"region": e.hostname}).Set(0)
+		e.up.With(prometheus.Labels{"host": e.hostname}).Set(0)
 		log.Println("Could not fetch metrics from squid instance: ", err)
 	}
 	e.up.Collect(c)
