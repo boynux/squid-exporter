@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/boynux/squid-exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/version"
 )
 
 const indexContent = `<html>
@@ -17,8 +19,16 @@ const indexContent = `<html>
              </body>
              </html>`
 
+func init() {
+	prometheus.MustRegister(version.NewCollector("squid_exporter"))
+}
+
 func main() {
 	config := NewConfig()
+	if *versionFlag {
+		log.Println(version.Print("squid_exporter"))
+		os.Exit(0)
+	}
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", config.SquidHostname, config.SquidPort))
 	e := collector.New(config.SquidHostname, config.SquidPort, config.Login, config.Password)
 

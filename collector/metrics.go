@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
 )
 
 type descMap map[string]*prometheus.Desc
@@ -77,7 +76,5 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 }
 
 func init() {
-	prometheus.MustRegister(version.NewCollector("squid_exporter"))
-
 	counters = generateSquidCounters()
 }

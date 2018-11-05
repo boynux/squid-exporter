@@ -12,6 +12,10 @@ const (
 	defaultSquidPort     = 3128
 )
 
+var (
+	versionFlag *bool
+)
+
 /*Config configurations for exporter */
 type Config struct {
 	ListenAddress string
@@ -36,6 +40,7 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.Login, "squid-login", "", "Login to squid service")
 	flag.StringVar(&c.Password, "squid-password", "", "Password to squid service")
+	versionFlag = flag.Bool("version", false, "Print the version and exit")
 
 	flag.Parse()
 
