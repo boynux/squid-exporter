@@ -25,7 +25,7 @@ Configure Prometheus to scrape metrics from `localhost:9301/metrics`
 
 To get all the parameteres
 
-    squid-exprter -help
+    squid-exporter -help
 
 
 Usage with docker:
