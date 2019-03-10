@@ -23,10 +23,20 @@ Simple usage:
       target_groups:
         - targets: ['localhost:9301']
 
-To get all the parameteres
+To get all the parameteres, command line arguments always override default and environment variables configs:
 
     squid-exporter -help
 
+The following environmnet variables can be used to override default parameters:
+
+```
+SQUID_EXPORTER_LISTEN
+SQUID_EXPORTER_METRICS_PATH
+SQUID_HOSTNAME
+SQUID_PORT
+SQUID_LOGIN
+SQUID_PASSWORD
+```
 
 Usage with docker:
 ------
@@ -37,6 +47,10 @@ Basic setup assuming Squid is running on the same machine:
 Setup with Squid running on a different host
 
     docker run -p 9301:9301 -d boynux/squid-exporter -squid-hostname "192.168.0.2" -squid-port 3128 -listen ":9301"
+
+With environment variables
+
+    docker run -p 9301:9301 -d -e SQUID_PORT="3128" -e SQUID_HOSTNAME="192.168.0.2" -e SQUID_EXPORTER_LISTEN=":9301" boynux/squid-exporter
 
 
 Build:
