@@ -15,7 +15,7 @@ Simple usage:
 
     squid-exporter -squid-hostname "localhost" -squid-port 3128
 
-Configure Prometheus to scrape metrics from `localhost:9301/metrics`
+[Configure Prometheus](https://github.com/boynux/squid-exporter/blob/master/prometheus/prometheus.yml) to scrape metrics from `localhost:9301/metrics`
 
     - job_name: squid
       # squid-exporter is installed, grab stats about the local
