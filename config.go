@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"log"
-	"strconv"
 	"os"
+	"strconv"
 )
 
 const (
@@ -13,6 +13,15 @@ const (
 	defaultMetricsPath   = "/metrics"
 	defaultSquidHostname = "localhost"
 	defaultSquidPort     = 3128
+)
+
+const (
+	squidExporterListenKey      = "SQUID_EXPORTER_LISTEN"
+	squidExporterMetricsPathKey = "SQUID_EXPORTER_METRICS_PATH"
+	squidHostnameKey            = "SQUID_HOSTNAME"
+	squidPortKey                = "SQUID_PORT"
+	squidLoginKey               = "SQUID_LOGIN"
+	squidPasswordKey            = "SQUID_PASSWORD"
 )
 
 var (
@@ -36,17 +45,17 @@ func NewConfig() *Config {
 	c := &Config{}
 
 	flag.StringVar(&c.ListenAddress, "listen",
-		loadEnvStringVar("SQUID_EXPORTER_LISTEN", defaultListenAddress), "Address and Port to bind exporter, in host:port format")
+		loadEnvStringVar(squidExporterListenKey, defaultListenAddress), "Address and Port to bind exporter, in host:port format")
 	flag.StringVar(&c.MetricPath, "metrics-path",
-		loadEnvStringVar("SQUID_EXPORTER_METRICS_PATH", defaultMetricsPath), "Metrics path to expose prometheus metrics")
+		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")
 
 	flag.StringVar(&c.SquidHostname, "squid-hostname",
-		loadEnvStringVar("SQUID_HOSTNAME", defaultSquidHostname), "Squid hostname")
+		loadEnvStringVar(squidHostnameKey, defaultSquidHostname), "Squid hostname")
 	flag.IntVar(&c.SquidPort, "squid-port",
-		loadEnvIntVar("SQUID_PORT", defaultSquidPort), "Squid port to read metrics")
+		loadEnvIntVar(squidPortKey, defaultSquidPort), "Squid port to read metrics")
 
-	flag.StringVar(&c.Login, "squid-login", loadEnvStringVar("SQUID_LOGIN", ""), "Login to squid service")
-	flag.StringVar(&c.Password, "squid-password", loadEnvStringVar("SQUID_PASSWORD", ""), "Password to squid service")
+	flag.StringVar(&c.Login, "squid-login", loadEnvStringVar(squidLoginKey, ""), "Login to squid service")
+	flag.StringVar(&c.Password, "squid-password", loadEnvStringVar(squidPasswordKey, ""), "Password to squid service")
 
 	versionFlag = flag.Bool("version", false, "Print the version and exit")
 
