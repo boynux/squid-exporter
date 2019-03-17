@@ -9,6 +9,12 @@ Exports squid metrics in Prometheus format
 
 **NOTE**: From release 1.0 metric names and some parameters has changed. Make sure you check the docs and update your deployments accordingly!
 
+New
+-----
+
+* Using environment variables to configure the exporter
+* Adding custom labels to metrics
+
 Usage:
 ------
 Simple usage:

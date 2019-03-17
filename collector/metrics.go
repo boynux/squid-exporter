@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -25,11 +26,13 @@ type Exporter struct {
 	hostname string
 	port     int
 
+	labels config.Labels
 	up *prometheus.GaugeVec
 }
 
 /*New initializes a new exporter */
-func New(hostname string, port int, login string, password string) *Exporter {
+func New(hostname string, port int, login string, password string, labels config.Labels) *Exporter {
+	counters = generateSquidCounters(labels.Keys)
 	c := NewCacheObjectClient(hostname, port, login, password)
 
 	return &Exporter{
@@ -38,6 +41,7 @@ func New(hostname string, port int, login string, password string) *Exporter {
 		hostname,
 		port,
 
+		labels,
 		prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "up",
@@ -65,7 +69,7 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 		e.up.With(prometheus.Labels{"host": e.hostname}).Set(1)
 		for i := range insts {
 			if d, ok := counters[insts[i].Key]; ok {
-				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value)
+				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value, e.labels.Values...)
 			}
 		}
 	} else {
@@ -75,6 +79,3 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	e.up.Collect(c)
 }
 
-func init() {
-	counters = generateSquidCounters()
-}

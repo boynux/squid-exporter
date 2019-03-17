@@ -47,7 +47,7 @@ var squidCounters = []squidCounter{
 	{"swap", "files_cleaned", "total", "The total number of server other kbytes received"},
 }
 
-func generateSquidCounters() descMap {
+func generateSquidCounters(labels []string) descMap {
 	counters := descMap{}
 
 	for i := range squidCounters {
@@ -57,7 +57,7 @@ func generateSquidCounters() descMap {
 			prometheus.BuildFQName(namespace, strings.Replace(counter.Section, ".", "_", -1),
 				fmt.Sprintf("%s_%s", counter.Counter, counter.Suffix)),
 			counter.Description,
-			[]string{}, nil,
+			labels, nil,
 		)
 	}
 

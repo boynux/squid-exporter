@@ -1,10 +1,12 @@
-package main
+package config
 
 import (
+	"fmt"
 	"flag"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -25,14 +27,21 @@ const (
 )
 
 var (
-	versionFlag *bool
+	VersionFlag *bool
 )
+
+type Labels struct {
+	Keys []string
+	Values []string
+}
+
 
 /*Config configurations for exporter */
 type Config struct {
 	ListenAddress string
 	ListenPort    int
 	MetricPath    string
+	Labels        Labels
 
 	SquidHostname string
 	SquidPort     int
@@ -49,6 +58,8 @@ func NewConfig() *Config {
 	flag.StringVar(&c.MetricPath, "metrics-path",
 		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")
 
+	flag.Var(&c.Labels, "label", "Custom metrics to attach to metrics, use -label multiple times for each additional label")
+
 	flag.StringVar(&c.SquidHostname, "squid-hostname",
 		loadEnvStringVar(squidHostnameKey, defaultSquidHostname), "Squid hostname")
 	flag.IntVar(&c.SquidPort, "squid-port",
@@ -57,7 +68,7 @@ func NewConfig() *Config {
 	flag.StringVar(&c.Login, "squid-login", loadEnvStringVar(squidLoginKey, ""), "Login to squid service")
 	flag.StringVar(&c.Password, "squid-password", loadEnvStringVar(squidPasswordKey, ""), "Password to squid service")
 
-	versionFlag = flag.Bool("version", false, "Print the version and exit")
+	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 
 	flag.Parse()
 
@@ -85,4 +96,31 @@ func loadEnvIntVar(key string, def int) int {
 	}
 
 	return def
+}
+
+func (l *Labels) String() string {
+	var lbls []string
+	for i := range l.Keys {
+		lbls = append(lbls, l.Keys[i] + "=" + l.Values[i])
+	}
+
+	return strings.Join(lbls, ", ")
+}
+
+func (l *Labels) Set(value string) error {
+	args := strings.Split(value, "=")
+
+	if len(args) != 2 || len(args[1]) < 1  {
+		return fmt.Errorf("Label must be in 'key=value' format")
+	}
+
+	for _, key := range l.Keys {
+		if key == args[0] {
+			return fmt.Errorf("Labels must be distinct, found duplicated key %s", args[0])
+		}
+	}
+	l.Keys = append(l.Keys, args[0])
+	l.Values = append(l.Values, args[1])
+
+	return nil
 }

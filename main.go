@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/boynux/squid-exporter/collector"
+	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 )
@@ -24,22 +25,22 @@ func init() {
 }
 
 func main() {
-	config := NewConfig()
-	if *versionFlag {
+	cfg := config.NewConfig()
+	if *config.VersionFlag {
 		log.Println(version.Print("squid_exporter"))
 		os.Exit(0)
 	}
-	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", config.SquidHostname, config.SquidPort))
-	e := collector.New(config.SquidHostname, config.SquidPort, config.Login, config.Password)
+	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
+	e := collector.New(cfg.SquidHostname, cfg.SquidPort, cfg.Login, cfg.Password, cfg.Labels)
 
 	prometheus.MustRegister(e)
 
 	// Serve metrics
-	http.Handle(config.MetricPath, prometheus.Handler())
+	http.Handle(cfg.MetricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(indexContent))
 	})
 
-	log.Println("Listening on", fmt.Sprintf("%s", config.ListenAddress))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", config.ListenAddress), nil))
+	log.Println("Listening on", fmt.Sprintf("%s", cfg.ListenAddress))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", cfg.ListenAddress), nil))
 }
