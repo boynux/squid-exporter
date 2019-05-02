@@ -33,7 +33,7 @@ To get all the parameteres, command line arguments always override default and e
 
     squid-exporter -help
 
-The following environmnet variables can be used to override default parameters:
+The following environment variables can be used to override default parameters:
 
 ```
 SQUID_EXPORTER_LISTEN
