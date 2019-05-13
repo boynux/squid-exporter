@@ -90,6 +90,19 @@ Features:
 - [ ] Other metrics
 - [x] Squid Authentication (Basic Auth)
 
+FAQ:
+--------
+
+- Q: Metrics are not reported by exporter
+- A: That usually means the exporter cannot reach squid server or the config manager permissions are not set corretly. To debug and mitigate:
+  - First make sure the exporter service can reach to squid server IP Address (you can use telnet to test that)
+  - Make sure you allow exporter to query the squid server in config you will need something like this (`172.20.0.0/16` is the network for exporter, you can also use a single IP if needed):
+  ```
+  #http_access allow manager localhost
+  acl prometheus src 172.20.0.0/16
+  http_access allow manager prometheus
+  ```
+  
 Contribution:
 -------------
 
