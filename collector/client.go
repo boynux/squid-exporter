@@ -59,6 +59,14 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 
 	r, err := get(conn, "counters", c.basicAuthString)
 
+	if err != nil {
+		return nil, err
+	}
+
+	if r.StatusCode != 200 {
+		return nil, fmt.Errorf("Non success code %d while fetching metrics", r.StatusCode)
+	}
+
 	var counters types.Counters
 
 	// TODO: Move to another func
