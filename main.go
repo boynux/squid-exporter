@@ -9,6 +9,7 @@ import (
 	"github.com/boynux/squid-exporter/collector"
 	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 )
 
@@ -36,7 +37,7 @@ func main() {
 	prometheus.MustRegister(e)
 
 	// Serve metrics
-	http.Handle(cfg.MetricPath, prometheus.Handler())
+	http.Handle(cfg.MetricPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(indexContent))
 	})
