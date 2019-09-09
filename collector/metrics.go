@@ -31,9 +31,9 @@ type Exporter struct {
 }
 
 /*New initializes a new exporter */
-func New(hostname string, port int, login string, password string, labels config.Labels) *Exporter {
+func New(hostname string, port int, login string, password string, authHeader bool, labels config.Labels) *Exporter {
 	counters = generateSquidCounters(labels.Keys)
-	c := NewCacheObjectClient(hostname, port, login, password)
+	c := NewCacheObjectClient(hostname, port, login, password, authHeader)
 
 	return &Exporter{
 		c,

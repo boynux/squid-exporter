@@ -31,7 +31,7 @@ func main() {
 		os.Exit(0)
 	}
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
-	e := collector.New(cfg.SquidHostname, cfg.SquidPort, cfg.Login, cfg.Password, cfg.Labels)
+	e := collector.New(cfg.SquidHostname, cfg.SquidPort, cfg.Login, cfg.Password, cfg.PassAuthHeader, cfg.Labels)
 
 	prometheus.MustRegister(e)
 

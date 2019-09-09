@@ -19,6 +19,7 @@ type CacheObjectClient struct {
 	hostname        string
 	port            int
 	basicAuthString string
+  authHeader      bool
 	headers         map[string]string
 }
 
@@ -40,11 +41,12 @@ func buildBasicAuthString(login string, password string) string {
 }
 
 /*NewCacheObjectClient initializes a new cache client */
-func NewCacheObjectClient(hostname string, port int, login string, password string) *CacheObjectClient {
+func NewCacheObjectClient(hostname string, port int, login string, password string, authHeader bool) *CacheObjectClient {
 	return &CacheObjectClient{
 		hostname,
 		port,
 		buildBasicAuthString(login, password),
+    authHeader,
 		map[string]string{},
 	}
 }
@@ -57,7 +59,7 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		return types.Counters{}, err
 	}
 
-	r, err := get(conn, "counters", c.basicAuthString)
+	r, err := get(conn, "counters", c.basicAuthString, c.authHeader)
 
 	if err != nil {
 		return nil, err
@@ -97,7 +99,7 @@ func connect(hostname string, port int) (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port))
 }
 
-func get(conn net.Conn, path string, basicAuthString string) (*http.Response, error) {
+func get(conn net.Conn, path string, basicAuthString string, authHeader bool) (*http.Response, error) {
 	rBody := []string{
 		fmt.Sprintf(requestProtocol, path),
 		"Host: localhost",
@@ -105,6 +107,9 @@ func get(conn net.Conn, path string, basicAuthString string) (*http.Response, er
 	}
 	if len(basicAuthString) > 0 {
 		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
+    if authHeader == true {
+      rBody = append(rBody, "Authorization: Basic "+basicAuthString)
+    }
 	}
 	rBody = append(rBody, "Accept: */*", "\r\n")
 	request := strings.Join(rBody, "\r\n")

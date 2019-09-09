@@ -24,6 +24,7 @@ const (
 	squidPortKey                = "SQUID_PORT"
 	squidLoginKey               = "SQUID_LOGIN"
 	squidPasswordKey            = "SQUID_PASSWORD"
+  squidPassAuthHeader         = "SQUID_PASS_AUTH_HEADER"
 )
 
 var (
@@ -38,15 +39,17 @@ type Labels struct {
 
 /*Config configurations for exporter */
 type Config struct {
-	ListenAddress string
-	ListenPort    int
-	MetricPath    string
-	Labels        Labels
+	ListenAddress  string
+	ListenPort     int
+	MetricPath     string
+	Labels         Labels
 
-	SquidHostname string
-	SquidPort     int
-	Login         string
-	Password      string
+	SquidHostname  string
+	SquidPort      int
+	Login          string
+	Password       string
+
+  PassAuthHeader bool
 }
 
 /*NewConfig creates a new config object from command line args */
@@ -67,6 +70,8 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.Login, "squid-login", loadEnvStringVar(squidLoginKey, ""), "Login to squid service")
 	flag.StringVar(&c.Password, "squid-password", loadEnvStringVar(squidPasswordKey, ""), "Password to squid service")
+
+	flag.BoolVar(&c.PassAuthHeader, "auth-header", loadEnvBoolVar(squidPassAuthHeader, false), "Passes Authorization header in addition to Proxy-Authorization header")
 
 	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 
@@ -96,6 +101,15 @@ func loadEnvIntVar(key string, def int) int {
 	}
 
 	return def
+}
+
+func loadEnvBoolVar(key string, def bool) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return def
+	}
+
+	return strings.ToLower(val) == "true"
 }
 
 func (l *Labels) String() string {
