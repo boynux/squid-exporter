@@ -42,9 +42,9 @@ var squidCounters = []squidCounter{
 	{"server.other", "kbytes_in", "kbytes_total", "The total number of server other kbytes received"},
 	{"server.other", "kbytes_out", "kbytes_total", "The total number of server other kbytes transferred"},
 
-	{"swap", "ins", "total", "The total number of server other requests"},
-	{"swap", "outs", "total", "The total number of server other errors"},
-	{"swap", "files_cleaned", "total", "The total number of server other kbytes received"},
+	{"swap", "ins", "total", "The number of objects read from disk"},
+	{"swap", "outs", "total", "The number of objects saved to disk"},
+	{"swap", "files_cleaned", "total", "The number of orphaned cache files removed by the periodic cleanup procedure"},
 }
 
 func generateSquidCounters(labels []string) descMap {
