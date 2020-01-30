@@ -1,8 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -31,10 +31,9 @@ var (
 )
 
 type Labels struct {
-	Keys []string
+	Keys   []string
 	Values []string
 }
-
 
 /*Config configurations for exporter */
 type Config struct {
@@ -101,7 +100,7 @@ func loadEnvIntVar(key string, def int) int {
 func (l *Labels) String() string {
 	var lbls []string
 	for i := range l.Keys {
-		lbls = append(lbls, l.Keys[i] + "=" + l.Values[i])
+		lbls = append(lbls, l.Keys[i]+"="+l.Values[i])
 	}
 
 	return strings.Join(lbls, ", ")
@@ -110,7 +109,7 @@ func (l *Labels) String() string {
 func (l *Labels) Set(value string) error {
 	args := strings.Split(value, "=")
 
-	if len(args) != 2 || len(args[1]) < 1  {
+	if len(args) != 2 || len(args[1]) < 1 {
 		return fmt.Errorf("Label must be in 'key=value' format")
 	}
 

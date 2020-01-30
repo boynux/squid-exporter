@@ -27,7 +27,7 @@ type Exporter struct {
 	port     int
 
 	labels config.Labels
-	up *prometheus.GaugeVec
+	up     *prometheus.GaugeVec
 }
 
 /*New initializes a new exporter */
@@ -78,4 +78,3 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	}
 	e.up.Collect(c)
 }
-

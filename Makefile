@@ -1,9 +1,9 @@
-.PHONY: all clean
+.PHONY: all fmt vet test build docker clean
 
-all: test build
+all: fmt vet test build
 
 EXE = ./bin/squid-exporter
-SRC = $(shell find ./ -type f -name '*.go')
+SRC = $(shell find . -type f -name '*.go')
 VERSION ?= $(shell cat VERSION)
 REVISION = $(shell git rev-parse HEAD)
 BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
@@ -14,6 +14,12 @@ LDFLAGS = -extldflags "-s -w -static" \
 
 $(EXE): $(SRC)
 	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '$(LDFLAGS)' -o $(EXE) .
+
+fmt:
+	go fmt ./...
+
+vet:
+	go vet ./...
 
 test:
 	go test -v ./...
