@@ -8,9 +8,9 @@ VERSION ?= $(shell cat VERSION)
 REVISION = $(shell git rev-parse HEAD)
 BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 LDFLAGS = -extldflags "-s -w -static" \
-		  -X github.com/boynux/squid-exporter/vendor/github.com/prometheus/common/version.Version=$(VERSION) \
-		  -X github.com/boynux/squid-exporter/vendor/github.com/prometheus/common/version.Revision=$(REVISION) \
-		  -X github.com/boynux/squid-exporter/vendor/github.com/prometheus/common/version.Branch=$(BRANCH)
+		  -X github.com/prometheus/common/version.Version=$(VERSION) \
+		  -X github.com/prometheus/common/version.Revision=$(REVISION) \
+		  -X github.com/prometheus/common/version.Branch=$(BRANCH)
 
 $(EXE): $(SRC)
 	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '$(LDFLAGS)' -o $(EXE) .
