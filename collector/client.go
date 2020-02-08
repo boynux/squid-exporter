@@ -127,7 +127,7 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 			}
 
 			if i, err := strconv.ParseFloat(value, 64); err == nil {
-				return types.Counter{key, i}, nil
+				return types.Counter{Key: key, Value: i}, nil
 			}
 		}
 	}
