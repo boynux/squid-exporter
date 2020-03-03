@@ -24,6 +24,7 @@ const (
 	squidPortKey                = "SQUID_PORT"
 	squidLoginKey               = "SQUID_LOGIN"
 	squidPasswordKey            = "SQUID_PASSWORD"
+	squidPidfile                = "SQUID_PIDFILE"
 )
 
 var (
@@ -46,6 +47,7 @@ type Config struct {
 	SquidPort     int
 	Login         string
 	Password      string
+	Pidfile       string
 }
 
 /*NewConfig creates a new config object from command line args */
@@ -66,6 +68,8 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.Login, "squid-login", loadEnvStringVar(squidLoginKey, ""), "Login to squid service")
 	flag.StringVar(&c.Password, "squid-password", loadEnvStringVar(squidPasswordKey, ""), "Password to squid service")
+
+	flag.StringVar(&c.Pidfile, "squid-pidfile", loadEnvStringVar(squidPidfile, ""), "Optional path to the squid PID file for additional metrics")
 
 	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 

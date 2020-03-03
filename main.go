@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/boynux/squid-exporter/collector"
 	"github.com/boynux/squid-exporter/config"
@@ -35,6 +38,24 @@ func main() {
 	e := collector.New(cfg.SquidHostname, cfg.SquidPort, cfg.Login, cfg.Password, cfg.Labels)
 
 	prometheus.MustRegister(e)
+
+	if cfg.Pidfile != "" {
+		procExporter := prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
+			PidFn: func() (int, error) {
+				content, err := ioutil.ReadFile(cfg.Pidfile)
+				if err != nil {
+					return 0, fmt.Errorf("can't read pid file %q: %s", cfg.Pidfile, err)
+				}
+				value, err := strconv.Atoi(strings.TrimSpace(string(content)))
+				if err != nil {
+					return 0, fmt.Errorf("can't parse pid file %q: %s", cfg.Pidfile, err)
+				}
+				return value, nil
+			},
+			Namespace: "squid",
+		})
+		prometheus.MustRegister(procExporter)
+	}
 
 	// Serve metrics
 	http.Handle(cfg.MetricPath, promhttp.Handler())
