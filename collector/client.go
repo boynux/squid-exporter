@@ -25,6 +25,7 @@ type CacheObjectClient struct {
 /*SquidClient provides functionality to fetch squid metrics */
 type SquidClient interface {
 	GetCounters() (types.Counters, error)
+	GetServiceTimes() (types.Counters, error)
 }
 
 const (
@@ -93,6 +94,49 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	return counters, err
 }
 
+/*GetServiceTimes fetches service times from squid cache manager */
+func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
+	conn, err := connect(c.hostname, c.port)
+
+	if err != nil {
+		return types.Counters{}, err
+	}
+
+	r, err := get(conn, "service_times", c.basicAuthString)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if r.StatusCode != 200 {
+		return nil, fmt.Errorf("Non success code %d while fetching service_times metrics", r.StatusCode)
+	}
+
+	var serviceTimes types.Counters
+
+	reader := bufio.NewReader(r.Body)
+
+	for {
+		line, err := reader.ReadString('\n')
+
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		c, err := decodeServiceTimeStrings(line)
+		if err != nil {
+			log.Println(err)
+		} else {
+			serviceTimes = append(serviceTimes, c)
+		}
+	}
+
+	return serviceTimes, err
+}
+
 func connect(hostname string, port int) (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port))
 }
@@ -132,5 +176,34 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 		}
 	}
 
-	return types.Counter{}, errors.New("could not parse line: " + line)
+	return types.Counter{}, errors.New("counter - could not parse line: " + line)
+}
+
+func decodeServiceTimeStrings(line string) (types.Counter, error) {
+	if equal := strings.Index(line, ":"); equal >= 0 {
+		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+			value := ""
+			if len(line) > equal {
+				value = strings.TrimSpace(line[equal+1:])
+			}
+			key = strings.Replace(key, " ", "_", -1)
+			key = strings.Replace(key, "(", "", -1)
+			key = strings.Replace(key, ")", "", -1)
+
+			if equalTwo := strings.Index(value, "%"); equalTwo >= 0 {
+				if keyTwo := strings.TrimSpace(value[:equalTwo]); len(keyTwo) > 0 {
+					if len(value) > equalTwo {
+						value = strings.Split(strings.TrimSpace(value[equalTwo+1:]), " ")[0]
+					}
+					key = key + "_" + keyTwo
+				}
+			}
+
+			if value, err := strconv.ParseFloat(value, 64); err == nil {
+				return types.Counter{Key: key, Value: value}, nil
+			}
+		}
+	}
+
+	return types.Counter{}, errors.New("servicec times - could not parse line: " + line)
 }
