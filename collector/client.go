@@ -50,15 +50,14 @@ func NewCacheObjectClient(hostname string, port int, login string, password stri
 	}
 }
 
-/*GetCounters fetches counters from squid cache manager */
-func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
-	conn, err := connect(c.hostname, c.port)
+func readFromSquid(hostname string, port int, basicAuthString string, endpoint string) (*bufio.Reader, error) {
+	conn, err := connect(hostname, port)
 
 	if err != nil {
-		return types.Counters{}, err
+		return nil, err
 	}
 
-	r, err := get(conn, "counters", c.basicAuthString)
+	r, err := get(conn, endpoint, basicAuthString)
 
 	if err != nil {
 		return nil, err
@@ -68,11 +67,10 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		return nil, fmt.Errorf("Non success code %d while fetching metrics", r.StatusCode)
 	}
 
-	var counters types.Counters
+	return bufio.NewReader(r.Body), err
+}
 
-	// TODO: Move to another func
-	reader := bufio.NewReader(r.Body)
-
+func readLines(reader *bufio.Reader, lines chan<- string) {
 	for {
 		line, err := reader.ReadString('\n')
 
@@ -80,9 +78,28 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			log.Printf("error reading from the bufio.Reader: %v", err)
+			break
 		}
 
+		lines <- line
+	}
+	close(lines)
+}
+
+/*GetCounters fetches counters from squid cache manager */
+func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
+	var counters types.Counters
+
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "counters")
+	if err != nil {
+		return nil, fmt.Errorf("error getting counters: %v", err)
+	}
+
+	lines := make(chan string)
+	go readLines(reader, lines)
+
+	for line := range lines {
 		c, err := decodeCounterStrings(line)
 		if err != nil {
 			log.Println(err)
@@ -96,41 +113,22 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 
 /*GetServiceTimes fetches service times from squid cache manager */
 func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
-	conn, err := connect(c.hostname, c.port)
-
-	if err != nil {
-		return types.Counters{}, err
-	}
-
-	r, err := get(conn, "service_times", c.basicAuthString)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if r.StatusCode != 200 {
-		return nil, fmt.Errorf("Non success code %d while fetching service_times metrics", r.StatusCode)
-	}
-
 	var serviceTimes types.Counters
 
-	reader := bufio.NewReader(r.Body)
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "service_times")
+	if err != nil {
+		return nil, fmt.Errorf("error getting service times: %v", err)
+	}
 
-	for {
-		line, err := reader.ReadString('\n')
+	lines := make(chan string)
+	go readLines(reader, lines)
 
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		c, err := decodeServiceTimeStrings(line)
+	for line := range lines {
+		s, err := decodeServiceTimeStrings(line)
 		if err != nil {
 			log.Println(err)
 		} else {
-			serviceTimes = append(serviceTimes, c)
+			serviceTimes = append(serviceTimes, s)
 		}
 	}
 
