@@ -86,14 +86,12 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	insts, err = e.client.GetServiceTimes()
 
 	if err == nil {
-		e.up.With(prometheus.Labels{"host": e.hostname}).Set(1)
 		for i := range insts {
 			if d, ok := serviceTimes[insts[i].Key]; ok {
 				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value, e.labels.Values...)
 			}
 		}
 	} else {
-		e.up.With(prometheus.Labels{"host": e.hostname}).Set(0)
 		log.Println("Could not fetch service times metrics from squid instance: ", err)
 	}
 
