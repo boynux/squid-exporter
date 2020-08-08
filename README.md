@@ -119,6 +119,8 @@ Contribution:
 
 Pull request and issues are very welcome.
 
+If you found this program useful please considering some donations [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3TH7YAMMEC5L4&source=url)
+
 Copyright:
 ----------
 
