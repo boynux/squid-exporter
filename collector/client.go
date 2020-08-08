@@ -25,6 +25,7 @@ type CacheObjectClient struct {
 /*SquidClient provides functionality to fetch squid metrics */
 type SquidClient interface {
 	GetCounters() (types.Counters, error)
+	GetServiceTimes() (types.Counters, error)
 }
 
 const (
@@ -49,15 +50,14 @@ func NewCacheObjectClient(hostname string, port int, login string, password stri
 	}
 }
 
-/*GetCounters fetches counters from squid cache manager */
-func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
-	conn, err := connect(c.hostname, c.port)
+func readFromSquid(hostname string, port int, basicAuthString string, endpoint string) (*bufio.Reader, error) {
+	conn, err := connect(hostname, port)
 
 	if err != nil {
-		return types.Counters{}, err
+		return nil, err
 	}
 
-	r, err := get(conn, "counters", c.basicAuthString)
+	r, err := get(conn, endpoint, basicAuthString)
 
 	if err != nil {
 		return nil, err
@@ -67,11 +67,10 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		return nil, fmt.Errorf("Non success code %d while fetching metrics", r.StatusCode)
 	}
 
-	var counters types.Counters
+	return bufio.NewReader(r.Body), err
+}
 
-	// TODO: Move to another func
-	reader := bufio.NewReader(r.Body)
-
+func readLines(reader *bufio.Reader, lines chan<- string) {
 	for {
 		line, err := reader.ReadString('\n')
 
@@ -79,9 +78,28 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			log.Printf("error reading from the bufio.Reader: %v", err)
+			break
 		}
 
+		lines <- line
+	}
+	close(lines)
+}
+
+/*GetCounters fetches counters from squid cache manager */
+func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
+	var counters types.Counters
+
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "counters")
+	if err != nil {
+		return nil, fmt.Errorf("error getting counters: %v", err)
+	}
+
+	lines := make(chan string)
+	go readLines(reader, lines)
+
+	for line := range lines {
 		c, err := decodeCounterStrings(line)
 		if err != nil {
 			log.Println(err)
@@ -91,6 +109,30 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	}
 
 	return counters, err
+}
+
+/*GetServiceTimes fetches service times from squid cache manager */
+func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
+	var serviceTimes types.Counters
+
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "service_times")
+	if err != nil {
+		return nil, fmt.Errorf("error getting service times: %v", err)
+	}
+
+	lines := make(chan string)
+	go readLines(reader, lines)
+
+	for line := range lines {
+		s, err := decodeServiceTimeStrings(line)
+		if err != nil {
+			log.Println(err)
+		} else {
+			serviceTimes = append(serviceTimes, s)
+		}
+	}
+
+	return serviceTimes, err
 }
 
 func connect(hostname string, port int) (net.Conn, error) {
@@ -132,5 +174,34 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 		}
 	}
 
-	return types.Counter{}, errors.New("could not parse line: " + line)
+	return types.Counter{}, errors.New("counter - could not parse line: " + line)
+}
+
+func decodeServiceTimeStrings(line string) (types.Counter, error) {
+	if equal := strings.Index(line, ":"); equal >= 0 {
+		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+			value := ""
+			if len(line) > equal {
+				value = strings.TrimSpace(line[equal+1:])
+			}
+			key = strings.Replace(key, " ", "_", -1)
+			key = strings.Replace(key, "(", "", -1)
+			key = strings.Replace(key, ")", "", -1)
+
+			if equalTwo := strings.Index(value, "%"); equalTwo >= 0 {
+				if keyTwo := strings.TrimSpace(value[:equalTwo]); len(keyTwo) > 0 {
+					if len(value) > equalTwo {
+						value = strings.Split(strings.TrimSpace(value[equalTwo+1:]), " ")[0]
+					}
+					key = key + "_" + keyTwo
+				}
+			}
+
+			if value, err := strconv.ParseFloat(value, 64); err == nil {
+				return types.Counter{Key: key, Value: value}, nil
+			}
+		}
+	}
+
+	return types.Counter{}, errors.New("servicec times - could not parse line: " + line)
 }

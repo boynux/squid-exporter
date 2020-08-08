@@ -89,6 +89,14 @@ Features:
   -  [x] Swap
   -  [ ] Page Faults
   -  [ ] Others
+- [ ] Expose Squid service times
+  - [x] HTTP requests
+  - [x] Cache misses
+  - [x] Cache hits
+  - [x] Near hits
+  - [ ] Not-Modified replies
+  - [x] DNS lookups
+  - [ ] ICP queries
 - [ ] Histograms
 - [ ] Other metrics
 - [x] Squid Authentication (Basic Auth)

@@ -16,7 +16,8 @@ const (
 )
 
 var (
-	counters descMap
+	counters     descMap
+	serviceTimes descMap
 )
 
 /*Exporter entry point to squid exporter */
@@ -33,6 +34,7 @@ type Exporter struct {
 /*New initializes a new exporter */
 func New(hostname string, port int, login string, password string, labels config.Labels) *Exporter {
 	counters = generateSquidCounters(labels.Keys)
+	serviceTimes = generateSquidServiceTimes(labels.Keys)
 	c := NewCacheObjectClient(hostname, port, login, password)
 
 	return &Exporter{
@@ -59,6 +61,10 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 		ch <- v
 	}
 
+	for _, v := range serviceTimes {
+		ch <- v
+	}
+
 }
 
 /*Collect fetches metrics from squid manager and pushes them to promethus */
@@ -74,7 +80,20 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 		}
 	} else {
 		e.up.With(prometheus.Labels{"host": e.hostname}).Set(0)
-		log.Println("Could not fetch metrics from squid instance: ", err)
+		log.Println("Could not fetch counter metrics from squid instance: ", err)
 	}
+
+	insts, err = e.client.GetServiceTimes()
+
+	if err == nil {
+		for i := range insts {
+			if d, ok := serviceTimes[insts[i].Key]; ok {
+				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value, e.labels.Values...)
+			}
+		}
+	} else {
+		log.Println("Could not fetch service times metrics from squid instance: ", err)
+	}
+
 	e.up.Collect(c)
 }
