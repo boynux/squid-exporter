@@ -34,9 +34,10 @@ func main() {
 		log.Println(version.Print("squid_exporter"))
 		os.Exit(0)
 	}
+	collector.ExtractServiceTimes = cfg.ExtractServiceTimes
+
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
 	e := collector.New(cfg.SquidHostname, cfg.SquidPort, cfg.Login, cfg.Password, cfg.Labels)
-
 	prometheus.MustRegister(e)
 
 	if cfg.Pidfile != "" {
