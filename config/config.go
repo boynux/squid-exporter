@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	defaultListenAddress = "127.0.0.1:9301"
-	defaultListenPort    = 9301
-	defaultMetricsPath   = "/metrics"
-	defaultSquidHostname = "localhost"
-	defaultSquidPort     = 3128
+	defaultListenAddress       = "127.0.0.1:9301"
+	defaultListenPort          = 9301
+	defaultMetricsPath         = "/metrics"
+	defaultSquidHostname       = "localhost"
+	defaultSquidPort           = 3128
+	defaultExtractServiceTimes = true
 )
 
 const (
@@ -25,6 +26,7 @@ const (
 	squidLoginKey               = "SQUID_LOGIN"
 	squidPasswordKey            = "SQUID_PASSWORD"
 	squidPidfile                = "SQUID_PIDFILE"
+	squidExtractServiceTimes    = "SQUID_EXTRACTSERVICETIMES"
 )
 
 var (
@@ -38,10 +40,11 @@ type Labels struct {
 
 /*Config configurations for exporter */
 type Config struct {
-	ListenAddress string
-	ListenPort    int
-	MetricPath    string
-	Labels        Labels
+	ListenAddress       string
+	ListenPort          int
+	MetricPath          string
+	Labels              Labels
+	ExtractServiceTimes bool
 
 	SquidHostname string
 	SquidPort     int
@@ -58,6 +61,9 @@ func NewConfig() *Config {
 		loadEnvStringVar(squidExporterListenKey, defaultListenAddress), "Address and Port to bind exporter, in host:port format")
 	flag.StringVar(&c.MetricPath, "metrics-path",
 		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")
+
+	flag.BoolVar(&c.ExtractServiceTimes, "extractservicetimes",
+		loadEnvBoolVar(squidExtractServiceTimes, defaultExtractServiceTimes), "Extract service times metrics")
 
 	flag.Var(&c.Labels, "label", "Custom metrics to attach to metrics, use -label multiple times for each additional label")
 
@@ -76,6 +82,21 @@ func NewConfig() *Config {
 	flag.Parse()
 
 	return c
+}
+
+func loadEnvBoolVar(key string, def bool) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return def
+	}
+	switch strings.ToLower(val) {
+	case "true":
+		return true
+	case "false":
+		return false
+	default:
+		return def
+	}
 }
 
 func loadEnvStringVar(key, def string) string {
