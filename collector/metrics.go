@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/boynux/squid-exporter/config"
+	"github.com/ohermosa/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

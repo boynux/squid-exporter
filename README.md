@@ -1,32 +1,33 @@
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/boynux/squid-exporter)
+# Squid Prometheus exporter
 
-[![Build Status](https://travis-ci.org/boynux/squid-exporter.svg?branch=master)](https://travis-ci.org/boynux/squid-exporter)
-[![Go Report Card](https://goreportcard.com/badge/github.com/boynux/squid-exporter)](https://goreportcard.com/report/github.com/boynux/squid-exporter)
-[![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/boynux/squid-exporter)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3TH7YAMMEC5L4&source=url)
+[![Build Status](https://travis-ci.com/ohermosa/squid-exporter.svg?branch=master)](https://travis-ci.com/ohermosa/squid-exporter)
 
-
-
-Squid Prometheus exporter
---------------------------
+- [Squid Prometheus exporter](#squid-prometheus-exporter)
+  - [New](#new)
+  - [Usage](#usage)
+  - [Usage with docker](#usage-with-docker)
+  - [Build](#build)
+  - [Features](#features)
+  - [FAQ](#faq)
+  - [Copyright](#copyright)
 
 Exports squid metrics in Prometheus format
 
-**NOTE**: From release 1.0 metric names and some parameters has changed. Make sure you check the docs and update your deployments accordingly!
+:information_source: This repository is forked from [boynux/squid-exporter](https://github.com/boynux/squid-exporter)
+:information_source:  From release 1.0 metric names and some parameters has changed. Make sure you check the docs and update your deployments accordingly!
 
-New
------
+## New
 
 * Using environment variables to configure the exporter
 * Adding custom labels to metrics
 
-Usage:
-------
+## Usage
+
 Simple usage:
 
     squid-exporter -squid-hostname "localhost" -squid-port 3128
 
-[Configure Prometheus](https://github.com/boynux/squid-exporter/blob/master/prometheus/prometheus.yml) to scrape metrics from `localhost:9301/metrics`
+[Configure Prometheus](https://github.com/ohermosa/squid-exporter/blob/master/prometheus/prometheus.yml) to scrape metrics from `localhost:9301/metrics`
 
     - job_name: squid
       # squid-exporter is installed, grab stats about the local
@@ -50,8 +51,8 @@ SQUID_PASSWORD
 SQUID_EXTRACTSERVICETIMES
 ```
 
-Usage with docker:
-------
+## Usage with docker
+
 Basic setup assuming Squid is running on the same machine:
 
     docker run --net=host -d boynux/squid-exporter
@@ -64,22 +65,19 @@ With environment variables
 
     docker run -p 9301:9301 -d -e SQUID_PORT="3128" -e SQUID_HOSTNAME="192.168.0.2" -e SQUID_EXPORTER_LISTEN=":9301" boynux/squid-exporter
 
-
-Build:
---------
+## Build
 
 This project is written in Go, so all the usual methods for building (or cross compiling) a Go application would work.
 
-If you are not very familiar with Go you can download the binary from [releases](https://github.com/boynux/squid-exporter/releases).
+If you are not very familiar with Go you can download the binary from [releases](https://github.com/ohermosa/squid-exporter/releases).
 
 Or build it for your OS:
 
-`go install https://github.com/boynux/squid-exporter`
+`go install https://github.com/ohermosa/squid-exporter`
 
 then you can find the binary in: `$GOPATH/bin/squid-exporter`
 
-Features:
----------
+## Features
 
 - [ ] Expose Squid counters
   -  [x] Client HTTP
@@ -104,29 +102,19 @@ Features:
 - [ ] Other metrics
 - [x] Squid Authentication (Basic Auth)
 
-FAQ:
---------
+## FAQ
 
 - Q: Metrics are not reported by exporter
 - A: That usually means the exporter cannot reach squid server or the config manager permissions are not set corretly. To debug and mitigate:
   - First make sure the exporter service can reach to squid server IP Address (you can use telnet to test that)
   - Make sure you allow exporter to query the squid server in config you will need something like this (`172.20.0.0/16` is the network for exporter, you can also use a single IP if needed):
-  ```
+
+```
   #http_access allow manager localhost
   acl prometheus src 172.20.0.0/16
   http_access allow manager prometheus
-  ```
-  
-Contribution:
--------------
+```
 
-Pull request and issues are very welcome.
-
-If you found this program useful please consider donations [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3TH7YAMMEC5L4&source=url)
-
-Copyright:
-----------
+## Copyright
 
 [MIT License](https://opensource.org/licenses/MIT)
-
-
