@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/boynux/squid-exporter/types"
+	"github.com/ohermosa/squid-exporter/types"
 	"io"
 	"log"
 	"net"

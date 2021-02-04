@@ -1,6 +1,6 @@
 FROM golang:alpine as builder
 
-WORKDIR /go/src/github.com/boynux/squid-exporter
+WORKDIR /go/src/github.com/ohermosa/squid-exporter
 COPY . .
 
 # Compile the binary statically, so it can be run without libraries.
