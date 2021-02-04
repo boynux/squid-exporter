@@ -15,7 +15,7 @@ env:
   global:
     - DOCKER_USERNAME=ohermosa
     - AUTHOR=ohermosa
-    - REPO_NAME=squid-alpine-ssl
+    - REPO_NAME=squid-exporter
 
 before_script:
   - export TAG=$(jq -r .version release.json)
@@ -32,26 +32,10 @@ script:
 before_deploy:
   - git tag -f "$TAG" -m "$TRAVIS_COMMIT_MESSAGE"
   - git tag
-  - export DEPLOY_DOCKER=$TRAVIS_BUILD_DIR/../deploy_docker
-  - mkdir -p $DEPLOY_DOCKER
-  - mkdir -p $DEPLOY_DOCKER/cache
-  - mkdir -p $DEPLOY_DOCKER/cert
-  - mkdir -p $DEPLOY_DOCKER/conf
-  - mkdir -p $DEPLOY_DOCKER/log
-  - cp -f $TRAVIS_BUILD_DIR/*.yml $DEPLOY_DOCKER
-  - sed -i s/latest/$TAG/g $DEPLOY_DOCKER/docker-compose.yml
-  - cp -f $TRAVIS_BUILD_DIR/cache/.placeholder $DEPLOY_DOCKER/cache
-  - cp -f $TRAVIS_BUILD_DIR/cert/.placeholder $DEPLOY_DOCKER/cert
-  - cp -f $TRAVIS_BUILD_DIR/conf/squid.conf $DEPLOY_DOCKER/conf
-  - cp -f $TRAVIS_BUILD_DIR/log/.placeholder $DEPLOY_DOCKER/log
-  - rm -f "$DEPLOY_DOCKER/../$REPO_NAME-$TAG-docker.zip" && cd $DEPLOY_DOCKER/ && zip -r -J "$DEPLOY_DOCKER/../$REPO_NAME-$TAG-docker.zip" *
-  - cd $TRAVIS_BUILD_DIR/
 
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file:
-    - "$DEPLOY_DOCKER/../$REPO_NAME-$TAG.zip"
   overwrite: true
   skip_cleanup: true
   on:
