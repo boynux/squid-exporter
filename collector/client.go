@@ -128,7 +128,9 @@ func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 		if err != nil {
 			log.Println(err)
 		} else {
-			serviceTimes = append(serviceTimes, s)
+			if s.Key != "" {
+				serviceTimes = append(serviceTimes, s)
+			}
 		}
 	}
 
@@ -178,6 +180,9 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 }
 
 func decodeServiceTimeStrings(line string) (types.Counter, error) {
+	if strings.HasSuffix(line, ":\n") { // A header line isn't a metric
+		return types.Counter{}, nil
+	}
 	if equal := strings.Index(line, ":"); equal >= 0 {
 		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
 			value := ""
@@ -203,5 +208,5 @@ func decodeServiceTimeStrings(line string) (types.Counter, error) {
 		}
 	}
 
-	return types.Counter{}, errors.New("servicec times - could not parse line: " + line)
+	return types.Counter{}, errors.New("service times - could not parse line: " + line)
 }
