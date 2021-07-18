@@ -2,15 +2,15 @@ language: go
 arch:
   - amd64
   - ppc64le
-  
+os: linux
+dist: xenial
 go:
 - 1.16.x
 
 deploy:
   provider: releases
-  api_key: 
+  token: 
     secure: "iumDvYQyMvTdD2AHxFDIVpixE7GK5VhCDo4wqkH9s3lmLIXTw2LPgUq4tx73aV7PGKskvWpILq87bh6t1AlFYnk/0VF12zMQWujsvh/iSdyCVvraobhYjiwQyHkFSoTBZ0xpwVImqRhF/AcAP/zwCTAGZMZMSm8xZucqkPaj02o8xgCKgPyDwv/IPo2Iiy6LmLbYeWBFScMtEyPqxjoKL5lL3b6e1W0esbJvPhzWQvTn2IBB8Ntm5hBBcqzG+/K3dNLpRTefX1xJlo2c5ZFT+KPFqIvNviNne7OhlX+NGZ33jUXVDPF4Lk6jLr49QnlTbqz8CKp3QzlpzOs+eF+2BBl5Gc1vJ0thmZ/TEujYD0rGzwDQ6nCVC6/VBbPiYhmQigk+AYFfxgutzHIfnuuySEoi5KOLNINtppwUTYjuxUv+YkQTUswCTa2MBoL0ZfAkdyrbBkGRL78sPRDRLK6KFXqz0Bk+pQdS0PebNclqaPnEML1jQYdRBgBQ0uFGcfOLkmIDr/L7icSif4uDrwaE1GnhHeloUOlaTSc63BSw1GdC+iYiGi8/TNg0Nw5co+M6Ii/Wuea9ngayAhVgNC64hV1giQEPPTfuS3EAxBf4ytybuqH3p+VtqD3ES97OqGGup4PHHQVPEdc6bzsD2aThLCeqpS/O9By9PiQcku+L+oo="
   file: bin/squid-exporter
-  skip_cleanup: true
   on:
     tags: true
