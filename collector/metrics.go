@@ -32,21 +32,35 @@ type Exporter struct {
 	up     *prometheus.GaugeVec
 }
 
+type CollectorConfig struct {
+	Hostname string
+	Port     int
+	Login    string
+	Password string
+	Labels   config.Labels
+	Headers  []string
+}
+
 /*New initializes a new exporter */
-func New(hostname string, port int, login string, password string, labels config.Labels) *Exporter {
-	counters = generateSquidCounters(labels.Keys)
+func New(c *CollectorConfig) *Exporter {
+	counters = generateSquidCounters(c.Labels.Keys)
 	if ExtractServiceTimes {
-		serviceTimes = generateSquidServiceTimes(labels.Keys)
+		serviceTimes = generateSquidServiceTimes(c.Labels.Keys)
 	}
-	c := NewCacheObjectClient(hostname, port, login, password)
 
 	return &Exporter{
-		c,
+		NewCacheObjectClient(&CacheObjectRequest{
+			c.Hostname,
+			c.Port,
+			c.Login,
+			c.Password,
+			c.Headers,
+		}),
 
-		hostname,
-		port,
+		c.Hostname,
+		c.Port,
 
-		labels,
+		c.Labels,
 		prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "up",

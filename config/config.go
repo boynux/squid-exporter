@@ -16,6 +16,7 @@ const (
 	defaultSquidHostname       = "localhost"
 	defaultSquidPort           = 3128
 	defaultExtractServiceTimes = true
+	defaultUseProxyHeader      = false
 )
 
 const (
@@ -27,6 +28,7 @@ const (
 	squidPasswordKey            = "SQUID_PASSWORD"
 	squidPidfile                = "SQUID_PIDFILE"
 	squidExtractServiceTimes    = "SQUID_EXTRACTSERVICETIMES"
+	squidUseProxyHeader         = "SQUID_USE_PRODXY_HEADER"
 )
 
 var (
@@ -41,7 +43,6 @@ type Labels struct {
 /*Config configurations for exporter */
 type Config struct {
 	ListenAddress       string
-	ListenPort          int
 	MetricPath          string
 	Labels              Labels
 	ExtractServiceTimes bool
@@ -51,6 +52,8 @@ type Config struct {
 	Login         string
 	Password      string
 	Pidfile       string
+
+	UseProxyHeader bool
 }
 
 /*NewConfig creates a new config object from command line args */
@@ -77,6 +80,9 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.Pidfile, "squid-pidfile", loadEnvStringVar(squidPidfile, ""), "Optional path to the squid PID file for additional metrics")
 
+	flag.BoolVar(&c.UseProxyHeader, "squid-use-proxy-header",
+		loadEnvBoolVar(squidUseProxyHeader, defaultUseProxyHeader), "Use proxy headers when fetching metrics")
+	
 	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 
 	flag.Parse()

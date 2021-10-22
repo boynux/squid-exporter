@@ -19,7 +19,7 @@ type CacheObjectClient struct {
 	hostname        string
 	port            int
 	basicAuthString string
-	headers         map[string]string
+	headers         []string
 }
 
 /*SquidClient provides functionality to fetch squid metrics */
@@ -40,24 +40,32 @@ func buildBasicAuthString(login string, password string) string {
 	}
 }
 
+type CacheObjectRequest struct {
+	Hostname string
+	Port     int
+	Login    string
+	Password string
+	Headers  []string
+}
+
 /*NewCacheObjectClient initializes a new cache client */
-func NewCacheObjectClient(hostname string, port int, login string, password string) *CacheObjectClient {
+func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 	return &CacheObjectClient{
-		hostname,
-		port,
-		buildBasicAuthString(login, password),
-		map[string]string{},
+		cor.Hostname,
+		cor.Port,
+		buildBasicAuthString(cor.Login, cor.Password),
+		cor.Headers,
 	}
 }
 
-func readFromSquid(hostname string, port int, basicAuthString string, endpoint string) (*bufio.Reader, error) {
+func readFromSquid(hostname string, port int, basicAuthString string, endpoint string, headers []string) (*bufio.Reader, error) {
 	conn, err := connect(hostname, port)
 
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := get(conn, endpoint, basicAuthString)
+	r, err := get(conn, endpoint, basicAuthString, headers)
 
 	if err != nil {
 		return nil, err
@@ -91,7 +99,7 @@ func readLines(reader *bufio.Reader, lines chan<- string) {
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	var counters types.Counters
 
-	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "counters")
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "counters", c.headers)
 	if err != nil {
 		return nil, fmt.Errorf("error getting counters: %v", err)
 	}
@@ -115,7 +123,7 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	var serviceTimes types.Counters
 
-	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "service_times")
+	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "service_times", c.headers)
 	if err != nil {
 		return nil, fmt.Errorf("error getting service times: %v", err)
 	}
@@ -141,12 +149,13 @@ func connect(hostname string, port int) (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port))
 }
 
-func get(conn net.Conn, path string, basicAuthString string) (*http.Response, error) {
-	rBody := []string{
+func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {
+	rBody := append(headers, []string{
 		fmt.Sprintf(requestProtocol, path),
 		"Host: localhost",
 		"User-Agent: squidclient/3.5.12",
-	}
+	}...)
+
 	if len(basicAuthString) > 0 {
 		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
 	}
