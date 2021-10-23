@@ -41,7 +41,7 @@ func main() {
 	if cfg.UseProxyHeader {
 		headers = append(headers, createProxyHeader(cfg))
 	}
-	
+
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
 	e := collector.New(&collector.CollectorConfig{
 		Hostname: cfg.SquidHostname,

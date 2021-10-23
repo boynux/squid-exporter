@@ -23,8 +23,8 @@ func createProxyHeader(cfg *config.Config) string {
 		log.Printf("Failed to create proxy header: %v\n", err.Error())
 		return ""
 	}
-	
-	sip, err  := net.LookupIP(la[0])
+
+	sip, err := net.LookupIP(la[0])
 	if err != nil {
 		log.Printf("Failed to create proxy header: %v\n", err.Error())
 		return ""
@@ -52,7 +52,7 @@ func createProxyHeader(cfg *config.Config) string {
 	}
 	phs, err := ph.Format()
 
-	if err != nil {	
+	if err != nil {
 		log.Printf("Failed to create proxy header: %v\n", err.Error())
 	}
 

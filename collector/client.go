@@ -5,21 +5,30 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/boynux/squid-exporter/types"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/boynux/squid-exporter/types"
 )
 
 /*CacheObjectClient holds information about squid manager */
 type CacheObjectClient struct {
-	hostname        string
-	port            int
+	ch              connectionHandler
 	basicAuthString string
 	headers         []string
+}
+
+type connectionHandler interface {
+	connect() (net.Conn, error)
+}
+
+type connectionHandlerImpl struct {
+	hostname string
+	port     int
 }
 
 /*SquidClient provides functionality to fetch squid metrics */
@@ -51,21 +60,22 @@ type CacheObjectRequest struct {
 /*NewCacheObjectClient initializes a new cache client */
 func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 	return &CacheObjectClient{
-		cor.Hostname,
-		cor.Port,
+		&connectionHandlerImpl{
+			cor.Hostname,
+			cor.Port,
+		},
 		buildBasicAuthString(cor.Login, cor.Password),
 		cor.Headers,
 	}
 }
 
-func readFromSquid(hostname string, port int, basicAuthString string, endpoint string, headers []string) (*bufio.Reader, error) {
-	conn, err := connect(hostname, port)
+func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error) {
+	conn, err := c.ch.connect()
 
 	if err != nil {
 		return nil, err
 	}
-
-	r, err := get(conn, endpoint, basicAuthString, headers)
+	r, err := get(conn, endpoint, c.basicAuthString, c.headers)
 
 	if err != nil {
 		return nil, err
@@ -99,7 +109,7 @@ func readLines(reader *bufio.Reader, lines chan<- string) {
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	var counters types.Counters
 
-	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "counters", c.headers)
+	reader, err := c.readFromSquid("counters")
 	if err != nil {
 		return nil, fmt.Errorf("error getting counters: %v", err)
 	}
@@ -123,7 +133,7 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	var serviceTimes types.Counters
 
-	reader, err := readFromSquid(c.hostname, c.port, c.basicAuthString, "service_times", c.headers)
+	reader, err := c.readFromSquid("service_times")
 	if err != nil {
 		return nil, fmt.Errorf("error getting service times: %v", err)
 	}
@@ -145,8 +155,8 @@ func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	return serviceTimes, err
 }
 
-func connect(hostname string, port int) (net.Conn, error) {
-	return net.Dial("tcp", fmt.Sprintf("%s:%d", hostname, port))
+func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
+	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
 }
 
 func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {

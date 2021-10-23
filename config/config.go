@@ -82,7 +82,7 @@ func NewConfig() *Config {
 
 	flag.BoolVar(&c.UseProxyHeader, "squid-use-proxy-header",
 		loadEnvBoolVar(squidUseProxyHeader, defaultUseProxyHeader), "Use proxy headers when fetching metrics")
-	
+
 	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 
 	flag.Parse()

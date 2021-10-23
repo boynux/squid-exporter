@@ -9,6 +9,7 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.31.1
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/sys v0.0.0-20211015200801-69063c4bb744 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
