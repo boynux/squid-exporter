@@ -116,7 +116,13 @@ FAQ:
   acl prometheus src 172.20.0.0/16
   http_access allow manager prometheus
   ```
-  
+
+- Q: Why `process_open_fds` metric is not exported?
+- A: This usualy means exporter don't have permission to read `/proc/<squid_proc_id>/fd` folder. You can either
+
+1. _[recommended]_ Set `CAP_DAC_READ_SEARCH` capability for squid exporter process (or docker). (eg. `sudo setcap 'cap_dac_read_search+ep' ./bin/squid-exporter`)
+2. _[not recommended]_ Run the exporter as root.
+
 Contribution:
 -------------
 
