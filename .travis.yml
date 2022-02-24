@@ -18,5 +18,5 @@ deploy:
     tags: true
 - provider: script
   on:
-	branch: master
+    branch: master
   script: bash ./deploy.sh
