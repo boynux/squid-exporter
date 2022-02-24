@@ -8,13 +8,13 @@ dist: xenial
 go:
 - 1.16.x
 deploy:
+- provider: script
+  on:
+    tag: true
+  script: bash ./deploy.sh
 - provider: releases
   skip_cleanup: true
   token: $GH_TOKEN
   file: bin/squid-exporter
   on:
     tags: true
-- provider: script
-  on:
-    branch: master
-  script: bash ./deploy.sh
