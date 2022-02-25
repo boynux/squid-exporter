@@ -10,7 +10,7 @@ go:
 deploy:
 - provider: script
   on:
-    tag: true
+    tags: true
   script: bash ./deploy.sh
 - provider: releases
   skip_cleanup: true
