@@ -19,8 +19,8 @@ spec:
       scheme: http
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
   targetLabels:
-    {{- with .Values.serviceMonitor.labels }}
-    {{- . | toYaml | nindent 6 }}
+    {{- range $label := .Values.serviceMonitor.labels }}
+    - {{ $label }}
     {{- end }}
   selector:
     matchLabels:
