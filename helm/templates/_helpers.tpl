@@ -40,6 +40,8 @@ helm.sh/chart: {{ include "squid-exporter.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+squid-exporter.boynux.com/proxy-hostname: {{ .Values.squidConfig.hostname }}
+squid-exporter.boynux.com/proxy-port: {{ .Values.squidConfig.port | quote }}
 {{- end }}
 
 {{/*

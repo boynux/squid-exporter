@@ -19,9 +19,11 @@ spec:
       scheme: http
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
   targetLabels:
-    {{- range $label := .Values.serviceMonitor.labels }}
+    {{- range $label, $val := .Values.serviceMonitor.labels }}
     - {{ $label }}
     {{- end }}
+    - squid-exporter.boynux.com/proxy-hostname
+    - squid-exporter.boynux.com/proxy-port
   selector:
     matchLabels:
       {{- include "squid-exporter.selectorLabels" . | nindent 8 }}
