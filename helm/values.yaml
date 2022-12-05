@@ -92,3 +92,13 @@ serviceMonitor:
   labels: {}
   interval: 30s
   scrapeTimeout: 30s
+  # Prometheus Operator rules to install
+  rules:
+    []
+    # - alert: SquidDown
+    #   annotations:
+    #     message: Exporter can not collect metrics from Squid proxy server {{ $labels.host }}
+    #   expr: squid_up == 0
+    #   for: 5m
+    #   labels:
+    #     severity: critical
