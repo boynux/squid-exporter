@@ -168,11 +168,13 @@ func get(conn net.Conn, path string, basicAuthString string, headers []string) (
 
 	if len(basicAuthString) > 0 {
 		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
+		rBody = append(rBody, "Authorization: Basic "+basicAuthString)
 	}
 	rBody = append(rBody, "Accept: */*", "\r\n")
 	request := strings.Join(rBody, "\r\n")
 
-	fmt.Fprintf(conn, request)
+	fmt.Fprint(conn, request)
+
 	return http.ReadResponse(bufio.NewReader(conn), nil)
 }
 
