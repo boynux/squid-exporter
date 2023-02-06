@@ -7,7 +7,9 @@ version: 2
 updates:
   - package-ecosystem: "gomod"
     directory: "/"
-    vendor: true
+    allow:
+      - dependency-type: "all"
+
     schedule:
       interval: "daily"
     open-pull-requests-limit: 0
