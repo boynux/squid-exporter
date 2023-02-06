@@ -32,7 +32,8 @@ Simple usage:
       # squid-exporter is installed, grab stats about the local
       # squid instance.
       target_groups:
-        - targets: ['localhost:9301']
+        - targets: 
+          - 'localhost:9301'
 
 To get all the parameteres, command line arguments always override default and environment variables configs:
 
