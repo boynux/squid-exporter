@@ -9,10 +9,8 @@ updates:
     directory: "/"
     allow:
       - dependency-type: "all"
-
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 0
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
