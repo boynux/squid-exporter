@@ -70,12 +70,6 @@ service:
   # for more information.
   nodePort: ""
 
-# Please pay attention that Kubernetes Ingress
-# is designed to handle HTTP or HTTPS traffic and not proxy protocol
-# so if you need to use Ingress, please ensure that your Ingress Controller
-# can properly forward PROXY requests (possibly via Ingress Controller specific annotations).
-# If it is not possible, Squid should be used either via in-cluster ClusterIP
-# Service or via NodePort and/or LoadBalancer Kubernetes Service type.
 ingress:
   enabled: false
   className: ""
