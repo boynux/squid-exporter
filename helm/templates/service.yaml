@@ -6,10 +6,17 @@ metadata:
     {{- include "squid-exporter.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  {{- if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: metrics
       protocol: TCP
       name: metrics
+      {{- if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
   selector:
     {{- include "squid-exporter.selectorLabels" . | nindent 4 }}

@@ -46,8 +46,29 @@ securityContext:
   # runAsUser: 1000
 
 service:
+  # Kubernetes Service type, one of [ClusterIP, NodePort, LoadBalancer]
   type: ClusterIP
   port: 80
+
+  # Supports either ClientIP or None.
+  # Used to maintain session affinity.
+  # Enable client IP based session affinity.
+  # https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+  sessionAffinity: ClientIP
+
+  # Service settings below are applicable only if
+  # service.type is one of [LoadBalancer, NodePort] and not ClusterIP.
+  # Possible values are [Cluster, Local].
+  # If set to Local, then the Service's port will be available only on Kubernetes
+  # Nodes which have the Squid Pods so no Kubernetes Node-to-Node traffic will be forwarded.
+  # If set to Cluster, then the Service's port will be available on any Node of
+  # a Kubernetes cluster. The drawback is that Kubernetes will use double NAT
+  # so it will hide the Client source IP from Squid.
+  externalTrafficPolicy: Cluster
+  # Node port to listen on. Typically, Kubernetes allows ports in range 30000-32767
+  # see https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  # for more information.
+  nodePort: ""
 
 # Please pay attention that Kubernetes Ingress
 # is designed to handle HTTP or HTTPS traffic and not proxy protocol
