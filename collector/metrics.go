@@ -108,7 +108,7 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 		if err == nil {
 			for i := range insts {
 				if d, ok := serviceTimes[insts[i].Key]; ok {
-					c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value, e.labels.Values...)
+					c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, insts[i].Value, e.labels.Values...)
 				}
 			}
 		} else {
