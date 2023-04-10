@@ -11,7 +11,7 @@ import (
 func TestCreatProxyHelper(t *testing.T) {
 	cfg := &config.Config{
 		ListenAddress: "192.0.2.1:3192",
-		SquidHostname: "localhost",
+		SquidHostname: "127.0.0.1",
 		SquidPort:     3128,
 	}
 
