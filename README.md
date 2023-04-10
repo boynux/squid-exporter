@@ -1,6 +1,7 @@
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/boynux/squid-exporter)
 
-[![Build Status](https://travis-ci.com/boynux/squid-exporter.svg?branch=master)](https://travis-ci.com/boynux/squid-exporter)
+[![Github Actions](https://github.com/boynux/squid-exporter/actions/workflows/release.yml/badge.svg)](https://github.com/boynux/squid-exporter/actions/workflows/release.yml)
+[![Github Docker](https://github.com/boynux/squid-exporter/actions/workflows/docker.yml/badge.svg)](https://github.com/boynux/squid-exporter/actions/workflows/docker.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/boynux/squid-exporter)](https://goreportcard.com/report/github.com/boynux/squid-exporter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/boynux/squid-exporter)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3TH7YAMMEC5L4&source=url)
