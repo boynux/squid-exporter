@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - "v*"
-  pull_request:
-    branches: ["master"]
+    branches:
+      - "master"
 
 jobs:
   build:
