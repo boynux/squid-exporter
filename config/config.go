@@ -28,7 +28,7 @@ const (
 	squidPasswordKey            = "SQUID_PASSWORD"
 	squidPidfile                = "SQUID_PIDFILE"
 	squidExtractServiceTimes    = "SQUID_EXTRACTSERVICETIMES"
-	squidUseProxyHeader         = "SQUID_USE_PRODXY_HEADER"
+	squidUseProxyHeader         = "SQUID_USE_PROXY_HEADER"
 )
 
 var (
