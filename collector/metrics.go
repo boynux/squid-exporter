@@ -1,19 +1,12 @@
 package collector
 
 import (
-	"log"
-	"time"
-
 	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
+	"log"
 )
 
 type descMap map[string]*prometheus.Desc
-
-const (
-	namespace = "squid"
-	timeout   = 10 * time.Second
-)
 
 var (
 	counters            descMap
@@ -33,12 +26,13 @@ type Exporter struct {
 }
 
 type CollectorConfig struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Labels   config.Labels
-	Headers  []string
+	Hostname  string
+	Port      int
+	Login     string
+	Password  string
+	Labels    config.Labels
+	Headers   []string
+	Namespace string
 }
 
 /*New initializes a new exporter */
@@ -62,7 +56,7 @@ func New(c *CollectorConfig) *Exporter {
 
 		c.Labels,
 		prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: namespace,
+			Namespace: c.Namespace,
 			Name:      "up",
 			Help:      "Was the last query of squid successful?",
 		}, []string{"host"}),

@@ -17,6 +17,7 @@ const (
 	defaultSquidPort           = 3128
 	defaultExtractServiceTimes = true
 	defaultUseProxyHeader      = false
+	defaultNamespace           = "squid"
 )
 
 const (
@@ -29,6 +30,7 @@ const (
 	squidPidfile                = "SQUID_PIDFILE"
 	squidExtractServiceTimes    = "SQUID_EXTRACTSERVICETIMES"
 	squidUseProxyHeader         = "SQUID_USE_PROXY_HEADER"
+	squidExporterNamespace      = "SQUID_EXPORTER_NAMESPACE"
 )
 
 var (
@@ -44,6 +46,7 @@ type Labels struct {
 type Config struct {
 	ListenAddress       string
 	MetricPath          string
+	MetricNamespace     string
 	Labels              Labels
 	ExtractServiceTimes bool
 
@@ -64,6 +67,8 @@ func NewConfig() *Config {
 		loadEnvStringVar(squidExporterListenKey, defaultListenAddress), "Address and Port to bind exporter, in host:port format")
 	flag.StringVar(&c.MetricPath, "metrics-path",
 		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")
+	flag.StringVar(&c.MetricNamespace, "metrics-namespace",
+		loadEnvStringVar(squidExporterNamespace, defaultNamespace), "Metrics namespace of prometheus metrics")
 
 	flag.BoolVar(&c.ExtractServiceTimes, "extractservicetimes",
 		loadEnvBoolVar(squidExtractServiceTimes, defaultExtractServiceTimes), "Extract service times metrics")
