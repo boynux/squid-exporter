@@ -11,7 +11,6 @@ import (
 
 const (
 	defaultListenAddress       = "127.0.0.1:9301"
-	defaultListenPort          = 9301
 	defaultMetricsPath         = "/metrics"
 	defaultSquidHostname       = "localhost"
 	defaultSquidPort           = 3128

@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.20.5-alpine AS builder
 
 WORKDIR /go/src/github.com/boynux/squid-exporter
 COPY . .
