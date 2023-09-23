@@ -21,7 +21,7 @@ jobs:
             armver: 7
     env:
       arch_name: ${{ matrix.arch }}${{ matrix.arch == 'arm' && 'v' || '' }}${{ matrix.armver }}
-    name: Build for ${{ env.arch_name }}
+    name: Build for ${{ matrix.arch }}${{ matrix.arch == 'arm' && 'v' || '' }}${{ matrix.armver }}
 
     steps:
     - name: Checkout repository
