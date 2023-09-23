@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Build and publish
 
     steps:
     - name: Checkout repository
@@ -27,7 +28,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Push the Docker image latest
+    - name: Build and publish Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
