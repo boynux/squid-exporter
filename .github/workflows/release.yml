@@ -14,11 +14,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [386, amd64, arm, arm64]
+        arch_name: [386, amd64, armv6, armv7, arm64]
         include:
-          - arch: arm
+          - arch: ${{ matrix.arch_name }}
+          - arch_name: armv6
+            arch: arm
             armver: 6
-          - arch: arm
+          - arch_name: armv7
+            arch: arm
             armver: 7
 
     steps:
@@ -31,19 +34,14 @@ jobs:
         # Path to the go.mod or go.work file.
         go-version-file: go.mod
 
-    - name: Build ${{ matrix.arch }} binary
+    - name: Build ${{ matrix.arch_name }} binary
       run: make build
       env:
         GOARCH: ${{ matrix.arch }}
         GOARM: ${{ matrix.armver }}
 
-    - name: Rename ${{ matrix.arch }} binary
-      if: ${{ matrix.arch != 'arm' }}
-      run: mv bin/squid-exporter bin/squid-exporter-linux-${{ matrix.arch }}
-
-    - name: Rename ${{ matrix.arch }}v${{ matrix.armver }} binary
-      if: ${{matrix.arch == 'arm' }}
-      run: mv bin/squid-exporter bin/squid-exporter-linux-${{ matrix.arch }}v${{ matrix.armver }}
+    - name: Rename ${{ matrix.arch_name }} binary
+      run: mv bin/squid-exporter bin/squid-exporter-linux-${{ matrix.arch_name }}
 
     - name: Upload binary
       uses: actions/upload-artifact@v3
