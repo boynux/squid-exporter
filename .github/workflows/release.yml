@@ -20,7 +20,7 @@ jobs:
           - arch: arm
             armver: 7
     env:
-      arch_name: ${{ join((matrix.arch, matrix.armver), 'v' }}
+      arch_name: ${{ matrix.arch }}${{ matrix.arch == 'arm' && 'v' || '' }}${{ matrix.armver }}
 
     steps:
     - name: Checkout repository
