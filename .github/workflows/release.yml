@@ -46,7 +46,7 @@ jobs:
       run: mv bin/squid-exporter bin/squid-exporter-linux-${{ matrix.arch }}v${{ matrix.armver }}
 
     - name: Upload binary
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v3
       with:
         name: binary
         path: bin/*
