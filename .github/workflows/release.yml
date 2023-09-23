@@ -21,6 +21,7 @@ jobs:
             armver: 7
     env:
       arch_name: ${{ matrix.arch }}${{ matrix.arch == 'arm' && 'v' || '' }}${{ matrix.armver }}
+    name: Build for ${{ env.arch_name }}
 
     steps:
     - name: Checkout repository
@@ -61,8 +62,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: squid-exporter
-          file: bin/squid-exporter
+          file: bin/squid-exporter-*
+          file_glob: true
           tag: unstable
           overwrite: true
           body: "pre-release"
@@ -73,8 +74,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: bin/squid-exporter
-          asset_name: squid-exporter
+          file: bin/squid-exporter-*
+          file_glob: true
           tag: ${{ github.ref }}
           overwrite: true
           body: "Stable release"
