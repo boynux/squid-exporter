@@ -6,6 +6,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/boynux/squid-exporter)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3TH7YAMMEC5L4&source=url)
 
+**Note: I've been very busy on the past couple of months with my personal life and work. Thanks for filing issues and feature requests. I'll start to go through them and provide updates very soon.**
 
 
 Squid Prometheus exporter
