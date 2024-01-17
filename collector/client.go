@@ -35,6 +35,7 @@ type connectionHandlerImpl struct {
 type SquidClient interface {
 	GetCounters() (types.Counters, error)
 	GetServiceTimes() (types.Counters, error)
+	GetInfos() (types.Counters, error)
 }
 
 const (
@@ -155,6 +156,38 @@ func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	return serviceTimes, err
 }
 
+/*GetInfos fetches info from squid cache manager */
+func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
+	var infos types.Counters
+
+	reader, err := c.readFromSquid("info")
+	if err != nil {
+		return nil, fmt.Errorf("error getting info: %v", err)
+	}
+
+	lines := make(chan string)
+	go readLines(reader, lines)
+
+	var infoVarLabels types.Counter
+	infoVarLabels.Key = "squid_info"
+	infoVarLabels.Value = 1
+
+	for line := range lines {
+		i, err := decodeInfoStrings(line)
+		if err != nil {
+			log.Println(err)
+		} else {
+			if i.Key == "Squid_Object_Cache_Version" || i.Key == "Build_Info" || i.Key == "Service_Name" || i.Key == "Start_Time" || i.Key == "Current_Time" {
+				infoVarLabels.VarLabels = append(infoVarLabels.VarLabels, i.VarLabels[0])
+			} else if i.Key != "" {
+				infos = append(infos, i)
+			}
+		}
+	}
+	infos = append(infos, infoVarLabels)
+	return infos, err
+}
+
 func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
 }
@@ -230,4 +263,75 @@ func decodeServiceTimeStrings(line string) (types.Counter, error) {
 	}
 
 	return types.Counter{}, errors.New("service times - could not parse line: " + line)
+}
+
+func decodeInfoStrings(line string) (types.Counter, error) {
+	if strings.HasSuffix(line, ":\n") { // A header line isn't a metric
+		return types.Counter{}, nil
+	}
+
+	if equal := strings.Index(line, ":"); equal >= 0 {
+		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+			value := ""
+			if len(line) > equal {
+				value = strings.TrimSpace(line[equal+1:])
+			}
+			key = strings.Replace(key, " ", "_", -1)
+			key = strings.Replace(key, "(", "", -1)
+			key = strings.Replace(key, ")", "", -1)
+			key = strings.Replace(key, ",", "", -1)
+			key = strings.Replace(key, "/", "", -1)
+
+			// metrics with string save as label
+			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" || key == "Start_Time" || key == "Current_Time" {
+				if key == "Squid_Object_Cache" {
+					key = key + "_Version"
+					if slices := strings.Split(value, " "); len(slices) > 0 {
+						value = slices[1]
+					}
+				}
+				var infoVarLabel types.VarLabel
+				infoVarLabel.Key = key
+				infoVarLabel.Value = value
+
+				var infoCounter types.Counter
+				infoCounter.Key = key
+				infoCounter.VarLabels = append(infoCounter.VarLabels, infoVarLabel)
+				return infoCounter, nil
+			}
+
+			// Remove additional formating string
+			if slices := strings.Split(value, " "); len(slices) > 0 {
+				if slices[0] == "5min:" {
+					value = slices[1]
+				} else {
+					value = slices[0]
+				}
+
+			}
+
+			value = strings.Replace(value, "%", "", -1)
+			value = strings.Replace(value, ",", "", -1)
+
+			if i, err := strconv.ParseFloat(value, 64); err == nil {
+				return types.Counter{Key: key, Value: i}, nil
+			}
+		}
+	} else {
+		lineTrimed := strings.TrimSpace(line[:])
+
+		if equal := strings.Index(lineTrimed, " "); equal >= 0 {
+			key := strings.TrimSpace(lineTrimed[equal+1:])
+			key = strings.Replace(key, " ", "_", -1)
+			key = strings.Replace(key, "-", "_", -1)
+
+			value := strings.TrimSpace(lineTrimed[:equal])
+
+			if i, err := strconv.ParseFloat(value, 64); err == nil {
+				return types.Counter{Key: key, Value: i}, nil
+			}
+		}
+	}
+
+	return types.Counter{}, errors.New("Info - could not parse line: " + line)
 }

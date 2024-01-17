@@ -19,6 +19,7 @@ var (
 	counters            descMap
 	serviceTimes        descMap // ExtractServiceTimes decides if we want to extract service times
 	ExtractServiceTimes bool
+	infos               descMap
 )
 
 /*Exporter entry point to squid exporter */
@@ -47,6 +48,8 @@ func New(c *CollectorConfig) *Exporter {
 	if ExtractServiceTimes {
 		serviceTimes = generateSquidServiceTimes(c.Labels.Keys)
 	}
+
+	infos = generateSquidInfos(c.Labels.Keys)
 
 	return &Exporter{
 		NewCacheObjectClient(&CacheObjectRequest{
@@ -84,6 +87,10 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 		}
 	}
 
+	for _, v := range infos {
+		ch <- v
+	}
+
 }
 
 /*Collect fetches metrics from squid manager and pushes them to promethus */
@@ -114,6 +121,34 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 		} else {
 			log.Println("Could not fetch service times metrics from squid instance: ", err)
 		}
+	}
+
+	insts, err = e.client.GetInfos()
+	if err == nil {
+		for i := range insts {
+			if d, ok := infos[insts[i].Key]; ok {
+				c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, insts[i].Value, e.labels.Values...)
+			} else if insts[i].Key == "squid_info" {
+				infoMetricName := prometheus.BuildFQName(namespace, "info", "service")
+				var labelsKeys []string
+				var labelsValues []string
+
+				for z := range insts[i].VarLabels {
+					labelsKeys = append(labelsKeys, insts[i].VarLabels[z].Key)
+					labelsValues = append(labelsValues, insts[i].VarLabels[z].Value)
+				}
+
+				infoDesc := prometheus.NewDesc(
+					infoMetricName,
+					"",
+					labelsKeys,
+					nil,
+				)
+				c <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, insts[i].Value, labelsValues...)
+			}
+		}
+	} else {
+		log.Println("Could not fetch info metrics from squid instance: ", err)
 	}
 
 	e.up.Collect(c)
