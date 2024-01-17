@@ -102,6 +102,15 @@ Features:
   - [ ] Not-Modified replies
   - [x] DNS lookups
   - [ ] ICP queries
+- [ ] Expose squid Info
+  - [x] Squid service info (as label)
+  - [x] Connection information for squid
+  - [x] Cache information for squid
+  - [ ] Median Service Times (seconds)  5 min
+  - [x] Resource usage for squid
+  - [x] Memory accounted for
+  - [x] File descriptor usage for squid
+  - [x] Internal Data Structures
 - [ ] Histograms
 - [ ] Other metrics
 - [x] Squid Authentication (Basic Auth)
