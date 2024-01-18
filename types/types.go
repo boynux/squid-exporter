@@ -1,5 +1,6 @@
 package types
 
+/*VarLabel maps key value prometheus labes*/
 type VarLabel struct {
 	Key   string
 	Value string

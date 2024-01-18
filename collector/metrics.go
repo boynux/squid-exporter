@@ -140,7 +140,7 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 
 				infoDesc := prometheus.NewDesc(
 					infoMetricName,
-					"",
+					"Metrics as string from info on cache_object",
 					labelsKeys,
 					nil,
 				)
