@@ -177,7 +177,8 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 		if err != nil {
 			log.Println(err)
 		} else {
-			if i.Key == "Squid_Object_Cache_Version" || i.Key == "Build_Info" || i.Key == "Service_Name" || i.Key == "Start_Time" || i.Key == "Current_Time" {
+			//if i.Key == "Squid_Object_Cache_Version" || i.Key == "Build_Info" || i.Key == "Service_Name" || i.Key == "Start_Time" || i.Key == "Current_Time" {
+			if len(i.VarLabels) > 0 {
 				infoVarLabels.VarLabels = append(infoVarLabels.VarLabels, i.VarLabels[0])
 			} else if i.Key != "" {
 				infos = append(infos, i)

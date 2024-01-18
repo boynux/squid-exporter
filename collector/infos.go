@@ -1,7 +1,6 @@
 package collector
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -68,7 +67,7 @@ func generateSquidInfos(labels []string) descMap {
 		var name string
 		var description string
 
-		key = fmt.Sprintf("%s", info.Section)
+		key = info.Section
 		name = prometheus.BuildFQName(namespace, "info", strings.Replace(info.Section, "%", "pct", -1))
 
 		if info.Description == "" {
