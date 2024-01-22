@@ -284,7 +284,7 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 			key = strings.Replace(key, "/", "", -1)
 
 			// metrics with string save as label
-			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" || key == "Start_Time" || key == "Current_Time" {
+			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" {
 				if key == "Squid_Object_Cache" {
 					key = key + "_Version"
 					if slices := strings.Split(value, " "); len(slices) > 0 {
@@ -299,6 +299,8 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 				infoCounter.Key = key
 				infoCounter.VarLabels = append(infoCounter.VarLabels, infoVarLabel)
 				return infoCounter, nil
+			} else if key == "Start_Time" || key == "Current_Time" {
+				return types.Counter{}, nil
 			}
 
 			// Remove additional formating string
