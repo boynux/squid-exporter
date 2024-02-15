@@ -173,14 +173,32 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 	infoVarLabels.Value = 1
 
 	for line := range lines {
-		i, err := decodeInfoStrings(line)
+		dis, err := decodeInfoStrings(line)
 		if err != nil {
 			log.Println(err)
 		} else {
-			if len(i.VarLabels) > 0 {
-				infoVarLabels.VarLabels = append(infoVarLabels.VarLabels, i.VarLabels[0])
-			} else if i.Key != "" {
-				infos = append(infos, i)
+			if len(dis.VarLabels) > 0 {
+				if dis.VarLabels[0].Key == "5min" {
+					var infoAvg5 types.Counter
+					var infoAvg60 types.Counter
+
+					infoAvg5.Key = dis.Key + "_" + dis.VarLabels[0].Key
+					infoAvg60.Key = dis.Key + "_" + dis.VarLabels[1].Key
+
+					if value, err := strconv.ParseFloat(dis.VarLabels[0].Value, 64); err == nil {
+						infoAvg5.Value = value
+						infos = append(infos, infoAvg5)
+					}
+					if value, err := strconv.ParseFloat(dis.VarLabels[1].Value, 64); err == nil {
+						infoAvg60.Value = value
+						infos = append(infos, infoAvg60)
+					}
+
+				} else {
+					infoVarLabels.VarLabels = append(infoVarLabels.VarLabels, dis.VarLabels[0])
+				}
+			} else if dis.Key != "" {
+				infos = append(infos, dis)
 			}
 		}
 	}
@@ -270,11 +288,11 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 		return types.Counter{}, nil
 	}
 
-	if equal := strings.Index(line, ":"); equal >= 0 {
-		if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+	if idx := strings.Index(line, ":"); idx >= 0 { // detect if line contain metric format like "metricName: value"
+		if key := strings.TrimSpace(line[:idx]); len(key) > 0 {
 			value := ""
-			if len(line) > equal {
-				value = strings.TrimSpace(line[equal+1:])
+			if len(line) > idx {
+				value = strings.TrimSpace(line[idx+1:])
 			}
 			key = strings.Replace(key, " ", "_", -1)
 			key = strings.Replace(key, "(", "", -1)
@@ -282,9 +300,9 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 			key = strings.Replace(key, ",", "", -1)
 			key = strings.Replace(key, "/", "", -1)
 
-			// metrics with string save as label
+			// metrics with value as string need to save as label, format like "Squid Object Cache: Version 6.1" (the 3 first metrics)
 			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" {
-				if key == "Squid_Object_Cache" {
+				if key == "Squid_Object_Cache" { // To clarify that the value is the squid version.
 					key = key + "_Version"
 					if slices := strings.Split(value, " "); len(slices) > 0 {
 						value = slices[1]
@@ -298,14 +316,34 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 				infoCounter.Key = key
 				infoCounter.VarLabels = append(infoCounter.VarLabels, infoVarLabel)
 				return infoCounter, nil
-			} else if key == "Start_Time" || key == "Current_Time" {
+			} else if key == "Start_Time" || key == "Current_Time" { // discart this metrics
 				return types.Counter{}, nil
 			}
 
-			// Remove additional formating string
+			// Remove additional information in value metric
 			if slices := strings.Split(value, " "); len(slices) > 0 {
-				if slices[0] == "5min:" {
-					value = slices[1]
+				if slices[0] == "5min:" && slices[2] == "60min:" { // catch metrics with avg in 5min and 60min format like "Hits as % of bytes sent: 5min: -0.0%, 60min: -0.0%"
+					var infoAvg5mVarLabel types.VarLabel
+					infoAvg5mVarLabel.Key = slices[0]
+					infoAvg5mVarLabel.Value = slices[1]
+
+					infoAvg5mVarLabel.Key = strings.Replace(infoAvg5mVarLabel.Key, ":", "", -1)
+					infoAvg5mVarLabel.Value = strings.Replace(infoAvg5mVarLabel.Value, "%", "", -1)
+					infoAvg5mVarLabel.Value = strings.Replace(infoAvg5mVarLabel.Value, ",", "", -1)
+
+					var infoAvg60mVarLabel types.VarLabel
+					infoAvg60mVarLabel.Key = slices[2]
+					infoAvg60mVarLabel.Value = slices[3]
+
+					infoAvg60mVarLabel.Key = strings.Replace(infoAvg60mVarLabel.Key, ":", "", -1)
+					infoAvg60mVarLabel.Value = strings.Replace(infoAvg60mVarLabel.Value, "%", "", -1)
+					infoAvg60mVarLabel.Value = strings.Replace(infoAvg60mVarLabel.Value, ",", "", -1)
+
+					var infoAvgCounter types.Counter
+					infoAvgCounter.Key = key
+					infoAvgCounter.VarLabels = append(infoAvgCounter.VarLabels, infoAvg5mVarLabel, infoAvg60mVarLabel)
+
+					return infoAvgCounter, nil
 				} else {
 					value = slices[0]
 				}
@@ -320,14 +358,15 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 			}
 		}
 	} else {
+		// this catch the last 4 metrics format like "value metricName"
 		lineTrimed := strings.TrimSpace(line[:])
 
-		if equal := strings.Index(lineTrimed, " "); equal >= 0 {
-			key := strings.TrimSpace(lineTrimed[equal+1:])
+		if idx := strings.Index(lineTrimed, " "); idx >= 0 {
+			key := strings.TrimSpace(lineTrimed[idx+1:])
 			key = strings.Replace(key, " ", "_", -1)
 			key = strings.Replace(key, "-", "_", -1)
 
-			value := strings.TrimSpace(lineTrimed[:equal])
+			value := strings.TrimSpace(lineTrimed[:idx])
 
 			if i, err := strconv.ParseFloat(value, 64); err == nil {
 				return types.Counter{Key: key, Value: i}, nil
