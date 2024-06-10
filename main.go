@@ -10,22 +10,17 @@ import (
 
 	"github.com/boynux/squid-exporter/collector"
 	"github.com/boynux/squid-exporter/config"
+	kitlog "github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
+	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
+	"github.com/prometheus/exporter-toolkit/web"
 )
 
-const indexContent = `<html>
-             <head><title>Squid Exporter</title></head>
-             <body>
-             <h1>Squid Exporter</h1>
-             <p><a href='` + "/metrics" + `'>Metrics</a></p>
-             </body>
-             </html>`
-
 func init() {
-	prometheus.MustRegister(version.NewCollector("squid_exporter"))
+	prometheus.MustRegister(versioncollector.NewCollector("squid_exporter"))
 }
 
 func main() {
@@ -73,10 +68,35 @@ func main() {
 
 	// Serve metrics
 	http.Handle(cfg.MetricPath, promhttp.Handler())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(indexContent))
-	})
 
-	log.Println("Listening on", cfg.ListenAddress)
-	log.Fatal(http.ListenAndServe(cfg.ListenAddress, nil))
+	if cfg.MetricPath != "/" {
+		landingConfig := web.LandingConfig{
+			Name:        "Squid Exporter",
+			Description: "Prometheus exporter for Squid caching proxy servers",
+			HeaderColor: "#15a5be",
+			Version:     version.Info(),
+			Links: []web.LandingLinks{
+				{
+					Address: cfg.MetricPath,
+					Text:    "Metrics",
+				},
+			},
+		}
+		landingPage, err := web.NewLandingPage(landingConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		http.Handle("/", landingPage)
+	}
+
+	systemdSocket := false
+	toolkitFlags := &web.FlagConfig{
+		WebListenAddresses: &[]string{cfg.ListenAddress},
+		WebSystemdSocket:   &systemdSocket,
+		WebConfigFile:      &cfg.WebConfigFile,
+	}
+	logger := kitlog.NewLogfmtLogger(kitlog.StdlibWriter{})
+
+	server := &http.Server{}
+	log.Fatal(web.ListenAndServe(server, toolkitFlags, logger))
 }

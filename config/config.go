@@ -43,6 +43,7 @@ type Labels struct {
 /*Config configurations for exporter */
 type Config struct {
 	ListenAddress       string
+	WebConfigFile       string
 	MetricPath          string
 	Labels              Labels
 	ExtractServiceTimes bool
@@ -62,6 +63,8 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.ListenAddress, "listen",
 		loadEnvStringVar(squidExporterListenKey, defaultListenAddress), "Address and Port to bind exporter, in host:port format")
+	flag.StringVar(&c.WebConfigFile, "web.config.file", "",
+		"Path to configuration file that can enable TLS or authentication. See: https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md")
 	flag.StringVar(&c.MetricPath, "metrics-path",
 		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")
 
