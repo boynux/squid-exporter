@@ -11,6 +11,7 @@ import (
 	"github.com/boynux/squid-exporter/collector"
 	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 )
@@ -53,7 +54,7 @@ func main() {
 	prometheus.MustRegister(e)
 
 	if cfg.Pidfile != "" {
-		procExporter := prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{
+		procExporter := collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
 			PidFn: func() (int, error) {
 				content, err := os.ReadFile(cfg.Pidfile)
 				if err != nil {
