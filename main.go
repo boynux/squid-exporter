@@ -77,6 +77,6 @@ func main() {
 		w.Write([]byte(indexContent))
 	})
 
-	log.Println("Listening on", fmt.Sprintf("%s", cfg.ListenAddress))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", cfg.ListenAddress), nil))
+	log.Println("Listening on", cfg.ListenAddress)
+	log.Fatal(http.ListenAndServe(cfg.ListenAddress, nil))
 }
