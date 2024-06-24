@@ -1,4 +1,4 @@
-FROM golang:1.19.1-alpine as build
+FROM golang:1.20-alpine as build
 
 ARG TARGETPLATFORM
 RUN echo "Building for ${TARGETPLATFORM}"

@@ -1,6 +1,6 @@
 module github.com/boynux/squid-exporter
 
-go 1.19
+go 1.20
 
 require (
 	github.com/go-kit/log v0.2.1
