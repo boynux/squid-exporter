@@ -93,7 +93,7 @@ func main() {
 	toolkitFlags := &web.FlagConfig{
 		WebListenAddresses: &[]string{cfg.ListenAddress},
 		WebSystemdSocket:   &systemdSocket,
-		WebConfigFile:      &cfg.WebConfigFile,
+		WebConfigFile:      &cfg.WebConfigPath,
 	}
 	logger := kitlog.NewLogfmtLogger(kitlog.StdlibWriter{})
 

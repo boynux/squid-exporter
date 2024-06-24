@@ -11,6 +11,7 @@ import (
 
 const (
 	defaultListenAddress       = "127.0.0.1:9301"
+	defaultWebConfigPath       = ""
 	defaultListenPort          = 9301
 	defaultMetricsPath         = "/metrics"
 	defaultSquidHostname       = "localhost"
@@ -20,15 +21,16 @@ const (
 )
 
 const (
-	squidExporterListenKey      = "SQUID_EXPORTER_LISTEN"
-	squidExporterMetricsPathKey = "SQUID_EXPORTER_METRICS_PATH"
-	squidHostnameKey            = "SQUID_HOSTNAME"
-	squidPortKey                = "SQUID_PORT"
-	squidLoginKey               = "SQUID_LOGIN"
-	squidPasswordKey            = "SQUID_PASSWORD"
-	squidPidfile                = "SQUID_PIDFILE"
-	squidExtractServiceTimes    = "SQUID_EXTRACTSERVICETIMES"
-	squidUseProxyHeader         = "SQUID_USE_PROXY_HEADER"
+	squidExporterListenKey        = "SQUID_EXPORTER_LISTEN"
+	squidExporterWebConfigPathKey = "SQUID_EXPORTER_WEB_CONFIG"
+	squidExporterMetricsPathKey   = "SQUID_EXPORTER_METRICS_PATH"
+	squidHostnameKey              = "SQUID_HOSTNAME"
+	squidPortKey                  = "SQUID_PORT"
+	squidLoginKey                 = "SQUID_LOGIN"
+	squidPasswordKey              = "SQUID_PASSWORD"
+	squidPidfile                  = "SQUID_PIDFILE"
+	squidExtractServiceTimes      = "SQUID_EXTRACTSERVICETIMES"
+	squidUseProxyHeader           = "SQUID_USE_PROXY_HEADER"
 )
 
 var (
@@ -43,7 +45,7 @@ type Labels struct {
 /*Config configurations for exporter */
 type Config struct {
 	ListenAddress       string
-	WebConfigFile       string
+	WebConfigPath       string
 	MetricPath          string
 	Labels              Labels
 	ExtractServiceTimes bool
@@ -63,7 +65,7 @@ func NewConfig() *Config {
 
 	flag.StringVar(&c.ListenAddress, "listen",
 		loadEnvStringVar(squidExporterListenKey, defaultListenAddress), "Address and Port to bind exporter, in host:port format")
-	flag.StringVar(&c.WebConfigFile, "web.config.file", "",
+	flag.StringVar(&c.WebConfigPath, "web.config.file", loadEnvStringVar(squidExporterWebConfigPathKey, defaultWebConfigPath),
 		"Path to configuration file that can enable TLS or authentication. See: https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md")
 	flag.StringVar(&c.MetricPath, "metrics-path",
 		loadEnvStringVar(squidExporterMetricsPathKey, defaultMetricsPath), "Metrics path to expose prometheus metrics")

@@ -21,6 +21,7 @@ New
 
 * Using environment variables to configure the exporter
 * Adding custom labels to metrics
+* Enabling TLS for exporter via [WebConfig](https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md)
 
 Usage:
 ------
@@ -44,6 +45,7 @@ The following environment variables can be used to override default parameters:
 
 ```
 SQUID_EXPORTER_LISTEN
+SQUID_EXPORTER_WEB_CONFIG_PATH
 SQUID_EXPORTER_METRICS_PATH
 SQUID_HOSTNAME
 SQUID_PORT
