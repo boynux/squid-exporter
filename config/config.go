@@ -22,7 +22,7 @@ const (
 
 const (
 	squidExporterListenKey        = "SQUID_EXPORTER_LISTEN"
-	squidExporterWebConfigPathKey = "SQUID_EXPORTER_WEB_CONFIG"
+	squidExporterWebConfigPathKey = "SQUID_EXPORTER_WEB_CONFIG_PATH"
 	squidExporterMetricsPathKey   = "SQUID_EXPORTER_METRICS_PATH"
 	squidHostnameKey              = "SQUID_HOSTNAME"
 	squidPortKey                  = "SQUID_PORT"
