@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bufio"
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -27,8 +28,11 @@ type connectionHandler interface {
 }
 
 type connectionHandlerImpl struct {
-	hostname string
-	port     int
+	hostname    string
+	port        int
+	certificate string
+	key         string
+	insecure    bool
 }
 
 /*SquidClient provides functionality to fetch squid metrics */
@@ -51,11 +55,14 @@ func buildBasicAuthString(login string, password string) string {
 }
 
 type CacheObjectRequest struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Headers  []string
+	Hostname    string
+	Port        int
+	Login       string
+	Password    string
+	Headers     []string
+	Certificate string
+	Key         string
+	Insecure    bool
 }
 
 /*NewCacheObjectClient initializes a new cache client */
@@ -64,6 +71,9 @@ func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 		&connectionHandlerImpl{
 			cor.Hostname,
 			cor.Port,
+			cor.Certificate,
+			cor.Key,
+			cor.Insecure,
 		},
 		buildBasicAuthString(cor.Login, cor.Password),
 		cor.Headers,
@@ -72,12 +82,10 @@ func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 
 func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error) {
 	conn, err := c.ch.connect()
-
 	if err != nil {
 		return nil, err
 	}
 	r, err := get(conn, endpoint, c.basicAuthString, c.headers)
-
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +215,18 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 }
 
 func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
+	if ch.certificate != "" && ch.key != "" {
+		cert, err := tls.LoadX509KeyPair(ch.certificate, ch.key)
+		if err != nil {
+			return nil, err
+		}
+		tlsconfig := tls.Config{Certificates: []tls.Certificate{cert}}
+		return tls.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port), &tlsconfig)
+	} else if ch.insecure {
+		tlsconfig := tls.Config{InsecureSkipVerify: ch.insecure}
+		return tls.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port), &tlsconfig)
+	}
+
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
 }
 
@@ -347,7 +367,6 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 				} else {
 					value = slices[0]
 				}
-
 			}
 
 			value = strings.Replace(value, "%", "", -1)

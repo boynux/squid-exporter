@@ -18,6 +18,7 @@ const (
 	defaultSquidPort           = 3128
 	defaultExtractServiceTimes = true
 	defaultUseProxyHeader      = false
+	defaultInsecure            = false
 )
 
 const (
@@ -31,6 +32,9 @@ const (
 	squidPidfile                  = "SQUID_PIDFILE"
 	squidExtractServiceTimes      = "SQUID_EXTRACTSERVICETIMES"
 	squidUseProxyHeader           = "SQUID_USE_PROXY_HEADER"
+	squidInsecure                 = "SQUID_INSECURE"
+	squidTLSCertificate           = "SQUID_TLS_CERTIFICATE"
+	squidTLSKey                   = "SQUID_TLS_KEY"
 )
 
 var (
@@ -57,6 +61,10 @@ type Config struct {
 	Pidfile       string
 
 	UseProxyHeader bool
+
+	TLSCertificate string
+	TLSKey         string
+	Insecure       bool
 }
 
 /*NewConfig creates a new config object from command line args */
@@ -87,6 +95,12 @@ func NewConfig() *Config {
 
 	flag.BoolVar(&c.UseProxyHeader, "squid-use-proxy-header",
 		loadEnvBoolVar(squidUseProxyHeader, defaultUseProxyHeader), "Use proxy headers when fetching metrics")
+
+	flag.BoolVar(&c.Insecure, "squid-insecure",
+		loadEnvBoolVar(squidInsecure, defaultInsecure), "Ignore certificate")
+
+	flag.StringVar(&c.TLSCertificate, "squid-tls-certificate", loadEnvStringVar(squidTLSCertificate, ""), "Certificate used by squid")
+	flag.StringVar(&c.TLSKey, "squid-tls-key", loadEnvStringVar(squidTLSKey, ""), "Key used by squid")
 
 	VersionFlag = flag.Bool("version", false, "Print the version and exit")
 
