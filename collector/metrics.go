@@ -34,12 +34,15 @@ type Exporter struct {
 }
 
 type CollectorConfig struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Labels   config.Labels
-	Headers  []string
+	Hostname       string
+	Port           int
+	Login          string
+	Password       string
+	Labels         config.Labels
+	Headers        []string
+	TLSCertificate string
+	TLSKey         string
+	Insecure       bool
 }
 
 /*New initializes a new exporter */
@@ -58,6 +61,9 @@ func New(c *CollectorConfig) *Exporter {
 			c.Login,
 			c.Password,
 			c.Headers,
+			c.TLSCertificate,
+			c.TLSKey,
+			c.Insecure,
 		}),
 
 		c.Hostname,

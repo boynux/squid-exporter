@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,14 +38,17 @@ func main() {
 		headers = append(headers, createProxyHeader(cfg))
 	}
 
-	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
+	log.Println("Scraping metrics from", net.JoinHostPort(cfg.SquidHostname, strconv.Itoa(cfg.SquidPort)))
 	e := collector.New(&collector.CollectorConfig{
-		Hostname: cfg.SquidHostname,
-		Port:     cfg.SquidPort,
-		Login:    cfg.Login,
-		Password: cfg.Password,
-		Labels:   cfg.Labels,
-		Headers:  headers,
+		Hostname:       cfg.SquidHostname,
+		Port:           cfg.SquidPort,
+		Login:          cfg.Login,
+		Password:       cfg.Password,
+		Labels:         cfg.Labels,
+		Headers:        headers,
+		TLSCertificate: cfg.TLSCertificate,
+		TLSKey:         cfg.TLSKey,
+		Insecure:       cfg.Insecure,
 	})
 	prometheus.MustRegister(e)
 
