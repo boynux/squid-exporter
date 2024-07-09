@@ -221,13 +221,13 @@ func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
 			return nil, err
 		}
 		tlsconfig := tls.Config{Certificates: []tls.Certificate{cert}}
-		return tls.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port), &tlsconfig)
+		return tls.Dial("tcp", net.JoinHostPort(ch.hostname, strconv.Itoa(ch.port)), &tlsconfig)
 	} else if ch.insecure {
 		tlsconfig := tls.Config{InsecureSkipVerify: ch.insecure}
-		return tls.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port), &tlsconfig)
+		return tls.Dial("tcp", net.JoinHostPort(ch.hostname, strconv.Itoa(ch.port)), &tlsconfig)
 	}
 
-	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
+	return net.Dial("tcp", net.JoinHostPort(ch.hostname, strconv.Itoa(ch.port)))
 }
 
 func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {
