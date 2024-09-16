@@ -1,0 +1,18 @@
+linters:
+  enable:
+    - errorlint
+    - goimports
+    - misspell
+    - perfsprint
+    - testifylint
+    - usestdlibvars
+
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - errcheck
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/boynux/squid-exporter
