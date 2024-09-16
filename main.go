@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/boynux/squid-exporter/collector"
-	"github.com/boynux/squid-exporter/config"
 	kitlog "github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -17,6 +15,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
+
+	"github.com/boynux/squid-exporter/collector"
+	"github.com/boynux/squid-exporter/config"
 )
 
 func init() {
@@ -53,11 +54,11 @@ func main() {
 			PidFn: func() (int, error) {
 				content, err := os.ReadFile(cfg.Pidfile)
 				if err != nil {
-					return 0, fmt.Errorf("can't read pid file %q: %s", cfg.Pidfile, err)
+					return 0, fmt.Errorf("cannot read pid file %q: %w", cfg.Pidfile, err)
 				}
 				value, err := strconv.Atoi(strings.TrimSpace(string(content)))
 				if err != nil {
-					return 0, fmt.Errorf("can't parse pid file %q: %s", cfg.Pidfile, err)
+					return 0, fmt.Errorf("cannot parse pid file %q: %w", cfg.Pidfile, err)
 				}
 				return value, nil
 			},

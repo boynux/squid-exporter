@@ -4,8 +4,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/boynux/squid-exporter/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/boynux/squid-exporter/types"
 )
 
 type mockConnectionHandler struct {
@@ -74,7 +76,7 @@ func TestDecodeMetricStrings(t *testing.T) {
 		c, err := tc.d(tc.s)
 
 		if tc.e != "" {
-			assert.EqualError(t, err, tc.e)
+			require.EqualError(t, err, tc.e)
 		}
 		assert.Equal(t, tc.c, c)
 	}

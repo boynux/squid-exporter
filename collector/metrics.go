@@ -4,8 +4,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/boynux/squid-exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/boynux/squid-exporter/config"
 )
 
 type descMap map[string]*prometheus.Desc
@@ -22,7 +23,7 @@ var (
 	infos               descMap
 )
 
-/*Exporter entry point to squid exporter */
+// Exporter entry point to Squid exporter.
 type Exporter struct {
 	client SquidClient
 
@@ -42,7 +43,7 @@ type CollectorConfig struct {
 	Headers  []string
 }
 
-/*New initializes a new exporter */
+// New initializes a new exporter.
 func New(c *CollectorConfig) *Exporter {
 	counters = generateSquidCounters(c.Labels.Keys)
 	if ExtractServiceTimes {
@@ -90,10 +91,9 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	for _, v := range infos {
 		ch <- v
 	}
-
 }
 
-/*Collect fetches metrics from squid manager and pushes them to promethus */
+// Collect fetches metrics from Squid manager and expose them to Prometheus.
 func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 	insts, err := e.client.GetCounters()
 

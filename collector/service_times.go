@@ -119,8 +119,7 @@ func generateSquidServiceTimes(labels []string) descMap {
 	for i := range squidServiceTimess {
 		serviceTime := squidServiceTimess[i]
 
-		var key string
-		var name string
+		var key, name string
 
 		if serviceTime.Counter != "" {
 			key = fmt.Sprintf("%s_%s_%s", serviceTime.Section, serviceTime.Counter, serviceTime.Suffix)
@@ -129,7 +128,7 @@ func generateSquidServiceTimes(labels []string) descMap {
 		} else {
 			key = fmt.Sprintf("%s_%s", serviceTime.Section, serviceTime.Suffix)
 			name = prometheus.BuildFQName(namespace, strings.Replace(serviceTime.Section, ".", "_", -1),
-				fmt.Sprintf("%s", serviceTime.Suffix))
+				serviceTime.Suffix)
 		}
 
 		serviceTimes[key] = prometheus.NewDesc(
