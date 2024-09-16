@@ -20,7 +20,7 @@ import (
 type CacheObjectClient struct {
 	ch              connectionHandler
 	basicAuthString string
-	headers         []string
+	proxyHeader     string
 }
 
 type connectionHandler interface {
@@ -48,11 +48,11 @@ func buildBasicAuthString(login string, password string) string {
 }
 
 type CacheObjectRequest struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Headers  []string
+	Hostname    string
+	Port        int
+	Login       string
+	Password    string
+	ProxyHeader string
 }
 
 /*NewCacheObjectClient initializes a new cache client */
@@ -63,7 +63,7 @@ func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 			cor.Port,
 		},
 		buildBasicAuthString(cor.Login, cor.Password),
-		cor.Headers,
+		cor.ProxyHeader,
 	}
 }
 
@@ -73,7 +73,7 @@ func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error
 	if err != nil {
 		return nil, err
 	}
-	r, err := get(conn, endpoint, c.basicAuthString, c.headers)
+	r, err := get(conn, endpoint, c.basicAuthString, c.proxyHeader)
 
 	if err != nil {
 		return nil, err
@@ -207,11 +207,12 @@ func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
 }
 
-func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {
+func get(conn net.Conn, path, basicAuthString, proxyHeader string) (*http.Response, error) {
 	var buf bytes.Buffer
 
-	for _, h := range headers {
-		fmt.Fprintf(&buf, "%s\r\n", h)
+	if proxyHeader != "" {
+		buf.WriteString(proxyHeader)
+		buf.WriteString("\r\n")
 	}
 
 	fmt.Fprintf(&buf, "GET cache_object://localhost/%s HTTP/1.0\r\n", path)

@@ -31,20 +31,20 @@ func main() {
 	}
 	collector.ExtractServiceTimes = cfg.ExtractServiceTimes
 
-	headers := []string{}
+	proxyHeader := ""
 
 	if cfg.UseProxyHeader {
-		headers = append(headers, createProxyHeader(cfg))
+		proxyHeader = createProxyHeader(cfg)
 	}
 
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
 	e := collector.New(&collector.CollectorConfig{
-		Hostname: cfg.SquidHostname,
-		Port:     cfg.SquidPort,
-		Login:    cfg.Login,
-		Password: cfg.Password,
-		Labels:   cfg.Labels,
-		Headers:  headers,
+		Hostname:    cfg.SquidHostname,
+		Port:        cfg.SquidPort,
+		Login:       cfg.Login,
+		Password:    cfg.Password,
+		Labels:      cfg.Labels,
+		ProxyHeader: proxyHeader,
 	})
 	prometheus.MustRegister(e)
 

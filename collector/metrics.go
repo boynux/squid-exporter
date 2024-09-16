@@ -34,12 +34,12 @@ type Exporter struct {
 }
 
 type CollectorConfig struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Labels   config.Labels
-	Headers  []string
+	Hostname    string
+	Port        int
+	Login       string
+	Password    string
+	Labels      config.Labels
+	ProxyHeader string
 }
 
 /*New initializes a new exporter */
@@ -57,7 +57,7 @@ func New(c *CollectorConfig) *Exporter {
 			c.Port,
 			c.Login,
 			c.Password,
-			c.Headers,
+			c.ProxyHeader,
 		}),
 
 		c.Hostname,
