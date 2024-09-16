@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -37,10 +38,6 @@ type SquidClient interface {
 	GetServiceTimes() (types.Counters, error)
 	GetInfos() (types.Counters, error)
 }
-
-const (
-	requestProtocol = "GET cache_object://localhost/%s HTTP/1.0"
-)
 
 func buildBasicAuthString(login string, password string) string {
 	if len(login) == 0 {
@@ -211,20 +208,28 @@ func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
 }
 
 func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {
-	rBody := append(headers, []string{
-		fmt.Sprintf(requestProtocol, path),
-		"Host: localhost",
-		"User-Agent: squidclient/3.5.12",
-	}...)
+	var buf bytes.Buffer
 
-	if len(basicAuthString) > 0 {
-		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
-		rBody = append(rBody, "Authorization: Basic "+basicAuthString)
+	for _, h := range headers {
+		fmt.Fprintf(&buf, "%s\r\n", h)
 	}
-	rBody = append(rBody, "Accept: */*", "\r\n")
-	request := strings.Join(rBody, "\r\n")
 
-	fmt.Fprint(conn, request)
+	fmt.Fprintf(&buf, "GET cache_object://localhost/%s HTTP/1.0\r\n", path)
+
+	h := http.Header{}
+	h.Add("Host", "localhost")
+	h.Add("User-Agent", "squidclient/3.5.12")
+	h.Add("Accept", "*/*")
+	if basicAuthString != "" {
+		h.Add("Proxy-Authorization", "Basic "+basicAuthString)
+		h.Add("Authorization", "Basic "+basicAuthString)
+	}
+	_ = h.Write(&buf)
+
+	buf.WriteString("\r\n")
+	if _, err := buf.WriteTo(conn); err != nil {
+		return nil, err
+	}
 
 	return http.ReadResponse(bufio.NewReader(conn), nil)
 }
