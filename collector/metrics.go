@@ -53,13 +53,7 @@ func New(c *CollectorConfig) *Exporter {
 	infos = generateSquidInfos(c.Labels.Keys)
 
 	return &Exporter{
-		NewCacheObjectClient(&CacheObjectRequest{
-			c.Hostname,
-			c.Port,
-			c.Login,
-			c.Password,
-			c.ProxyHeader,
-		}),
+		NewCacheObjectClient(c.Hostname, c.Port, c.Login, c.Password, c.ProxyHeader),
 
 		c.Hostname,
 		c.Port,

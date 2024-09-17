@@ -1,7 +1,8 @@
 package collector
 
 import (
-	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,52 +11,23 @@ import (
 	"github.com/boynux/squid-exporter/types"
 )
 
-type mockConnectionHandler struct {
-	server net.Conn
-
-	buffer []byte
-}
-
-func (c *mockConnectionHandler) connect() (net.Conn, error) {
-	var client net.Conn
-	c.server, client = net.Pipe()
-
-	return client, nil
-}
-
-func TestBuildBasicAuth(t *testing.T) {
-	u := "test_username"
-	p := "test_password"
-	expectedAuthString := "dGVzdF91c2VybmFtZTp0ZXN0X3Bhc3N3b3Jk"
-
-	ba := buildBasicAuthString(u, p)
-
-	assert.Equal(t, expectedAuthString, ba, "Basic Auth format doesn't match")
-}
-
 func TestReadFromSquid(t *testing.T) {
-	ch := &mockConnectionHandler{}
-
-	go func() {
-		b := make([]byte, 256)
-		n, _ := ch.server.Read(b)
-		ch.buffer = append(ch.buffer, b[:n]...)
-
-		ch.server.Write(b[n:])
-		ch.server.Close()
-	}()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.RequestURI, "/squid-internal-mgr/test")
+	}))
+	defer ts.Close()
 
 	coc := &CacheObjectClient{
-		ch,
+		ts.URL + "/squid-internal-mgr/",
+		"",
 		"",
 		"",
 	}
-	// This test is overly brittle; the order of HTTP headers is not significant. Go sorts headers
-	// lexicographically when calling http.Header.Write().
-	expected := "GET cache_object://localhost/test HTTP/1.0\r\nAccept: */*\r\nHost: localhost\r\nUser-Agent: squidclient/3.5.12\r\n\r\n"
-	coc.readFromSquid("test")
 
-	assert.Equal(t, expected, string(ch.buffer))
+	_, err := coc.readFromSquid("test")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestDecodeMetricStrings(t *testing.T) {
