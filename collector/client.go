@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -89,23 +88,6 @@ func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error
 	return bufio.NewReader(r.Body), err
 }
 
-func readLines(reader *bufio.Reader, lines chan<- string) {
-	for {
-		line, err := reader.ReadString('\n')
-
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Printf("error reading from the bufio.Reader: %v", err)
-			break
-		}
-
-		lines <- line
-	}
-	close(lines)
-}
-
 /*GetCounters fetches counters from squid cache manager */
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	var counters types.Counters
@@ -115,16 +97,16 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 		return nil, fmt.Errorf("error getting counters: %v", err)
 	}
 
-	lines := make(chan string)
-	go readLines(reader, lines)
-
-	for line := range lines {
-		c, err := decodeCounterStrings(line)
-		if err != nil {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		if c, err := decodeCounterStrings(scanner.Text()); err != nil {
 			log.Println(err)
 		} else {
 			counters = append(counters, c)
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	return counters, err
@@ -139,18 +121,16 @@ func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 		return nil, fmt.Errorf("error getting service times: %v", err)
 	}
 
-	lines := make(chan string)
-	go readLines(reader, lines)
-
-	for line := range lines {
-		s, err := decodeServiceTimeStrings(line)
-		if err != nil {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		if s, err := decodeServiceTimeStrings(scanner.Text()); err != nil {
 			log.Println(err)
-		} else {
-			if s.Key != "" {
-				serviceTimes = append(serviceTimes, s)
-			}
+		} else if s.Key != "" {
+			serviceTimes = append(serviceTimes, s)
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	return serviceTimes, err
@@ -165,22 +145,16 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 		return nil, fmt.Errorf("error getting info: %v", err)
 	}
 
-	lines := make(chan string)
-	go readLines(reader, lines)
+	infoVarLabels := types.Counter{Key: "squid_info", Value: 1}
 
-	var infoVarLabels types.Counter
-	infoVarLabels.Key = "squid_info"
-	infoVarLabels.Value = 1
-
-	for line := range lines {
-		dis, err := decodeInfoStrings(line)
-		if err != nil {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		if dis, err := decodeInfoStrings(scanner.Text()); err != nil {
 			log.Println(err)
 		} else {
 			if len(dis.VarLabels) > 0 {
 				if dis.VarLabels[0].Key == "5min" {
-					var infoAvg5 types.Counter
-					var infoAvg60 types.Counter
+					var infoAvg5, infoAvg60 types.Counter
 
 					infoAvg5.Key = dis.Key + "_" + dis.VarLabels[0].Key
 					infoAvg60.Key = dis.Key + "_" + dis.VarLabels[1].Key
@@ -202,6 +176,10 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 			}
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
 	infos = append(infos, infoVarLabels)
 	return infos, err
 }
@@ -252,7 +230,7 @@ func decodeCounterStrings(line string) (types.Counter, error) {
 }
 
 func decodeServiceTimeStrings(line string) (types.Counter, error) {
-	if strings.HasSuffix(line, ":\n") { // A header line isn't a metric
+	if strings.HasSuffix(line, ":") { // A header line isn't a metric
 		return types.Counter{}, nil
 	}
 	if equal := strings.Index(line, ":"); equal >= 0 {
@@ -284,7 +262,7 @@ func decodeServiceTimeStrings(line string) (types.Counter, error) {
 }
 
 func decodeInfoStrings(line string) (types.Counter, error) {
-	if strings.HasSuffix(line, ":\n") { // A header line isn't a metric
+	if strings.HasSuffix(line, ":") { // A header line isn't a metric
 		return types.Counter{}, nil
 	}
 
