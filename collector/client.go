@@ -2,12 +2,9 @@ package collector
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,18 +14,10 @@ import (
 
 // CacheObjectClient holds information about Squid manager.
 type CacheObjectClient struct {
-	ch              connectionHandler
-	basicAuthString string
-	proxyHeader     string
-}
-
-type connectionHandler interface {
-	connect() (net.Conn, error)
-}
-
-type connectionHandlerImpl struct {
-	hostname string
-	port     int
+	baseURL     string
+	username    string
+	password    string
+	proxyHeader string
 }
 
 // SquidClient provides functionality to fetch Squid metrics.
@@ -38,51 +27,36 @@ type SquidClient interface {
 	GetInfos() (types.Counters, error)
 }
 
-func buildBasicAuthString(login string, password string) string {
-	if len(login) == 0 {
-		return ""
-	}
-
-	return base64.StdEncoding.EncodeToString([]byte(login + ":" + password))
-}
-
-type CacheObjectRequest struct {
-	Hostname    string
-	Port        int
-	Login       string
-	Password    string
-	ProxyHeader string
-}
-
-// NewCacheObjectClient initializes a new cache client.
-func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
+/*NewCacheObjectClient initializes a new cache client */
+func NewCacheObjectClient(hostname string, port int, username, password, proxyHeader string) *CacheObjectClient {
 	return &CacheObjectClient{
-		&connectionHandlerImpl{
-			cor.Hostname,
-			cor.Port,
-		},
-		buildBasicAuthString(cor.Login, cor.Password),
-		cor.ProxyHeader,
+		fmt.Sprintf("http://%s:%d/squid-internal-mgr/", hostname, port),
+		username,
+		password,
+		proxyHeader,
 	}
 }
 
 func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error) {
-	conn, err := c.ch.connect()
-
-	if err != nil {
-		return nil, err
-	}
-	r, err := get(conn, endpoint, c.basicAuthString, c.proxyHeader)
-
+	req, err := http.NewRequest(http.MethodGet, c.baseURL+endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if r.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-success code %d while fetching metrics", r.StatusCode)
+	if c.username != "" && c.password != "" {
+		req.SetBasicAuth(c.username, c.password)
 	}
 
-	return bufio.NewReader(r.Body), err
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-success code %d while fetching metrics", resp.StatusCode)
+	}
+
+	return bufio.NewReader(resp.Body), err
 }
 
 // GetCounters fetches counters from Squid cache manager.
@@ -178,38 +152,6 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 
 	infos = append(infos, infoVarLabels)
 	return infos, err
-}
-
-func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
-	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
-}
-
-func get(conn net.Conn, path, basicAuthString, proxyHeader string) (*http.Response, error) {
-	var buf bytes.Buffer
-
-	if proxyHeader != "" {
-		buf.WriteString(proxyHeader)
-		buf.WriteString("\r\n")
-	}
-
-	fmt.Fprintf(&buf, "GET cache_object://localhost/%s HTTP/1.0\r\n", path)
-
-	h := http.Header{}
-	h.Add("Host", "localhost")
-	h.Add("User-Agent", "squidclient/3.5.12")
-	h.Add("Accept", "*/*")
-	if basicAuthString != "" {
-		h.Add("Proxy-Authorization", "Basic "+basicAuthString)
-		h.Add("Authorization", "Basic "+basicAuthString)
-	}
-	_ = h.Write(&buf)
-
-	buf.WriteString("\r\n")
-	if _, err := buf.WriteTo(conn); err != nil {
-		return nil, err
-	}
-
-	return http.ReadResponse(bufio.NewReader(conn), nil)
 }
 
 func decodeCounterStrings(line string) (types.Counter, error) {
