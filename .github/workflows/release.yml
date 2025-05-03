@@ -43,19 +43,20 @@ jobs:
       run: mv bin/squid-exporter bin/squid-exporter-linux-${{ env.arch_name }}
 
     - name: Upload binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: binary
-        path: bin/*
+        name: squid-exporter-${{ strategy.job-index }}
+        path: bin/squid-exporter-linux-${{ env.arch_name }}
+        overwrite: true
 
   release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Download binaries for release
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: binary
+          name: squid-exporter-${{ strategy.job-index }}
           path: bin
 
       - name: Release latest version
