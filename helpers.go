@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/boynux/squid-exporter/config"
-
 	proxyproto "github.com/pires/go-proxyproto"
+
+	"github.com/boynux/squid-exporter/config"
 )
 
 func createProxyHeader(cfg *config.Config) string {

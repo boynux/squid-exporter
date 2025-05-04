@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -42,7 +43,7 @@ type Labels struct {
 	Values []string
 }
 
-/*Config configurations for exporter */
+// Config configurations for exporter.
 type Config struct {
 	ListenAddress       string
 	WebConfigPath       string
@@ -59,7 +60,7 @@ type Config struct {
 	UseProxyHeader bool
 }
 
-/*NewConfig creates a new config object from command line args */
+// NewConfig creates a new config object from command line args.
 func NewConfig() *Config {
 	c := &Config{}
 
@@ -146,12 +147,12 @@ func (l *Labels) Set(value string) error {
 	args := strings.Split(value, "=")
 
 	if len(args) != 2 || len(args[1]) < 1 {
-		return fmt.Errorf("Label must be in 'key=value' format")
+		return errors.New("label must be in 'key=value' format")
 	}
 
 	for _, key := range l.Keys {
 		if key == args[0] {
-			return fmt.Errorf("Labels must be distinct, found duplicated key %s", args[0])
+			return fmt.Errorf("labels must be distinct; found duplicate key %q", args[0])
 		}
 	}
 	l.Keys = append(l.Keys, args[0])

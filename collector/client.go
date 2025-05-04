@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -14,11 +15,11 @@ import (
 	"github.com/boynux/squid-exporter/types"
 )
 
-/*CacheObjectClient holds information about squid manager */
+// CacheObjectClient holds information about Squid manager.
 type CacheObjectClient struct {
 	ch              connectionHandler
 	basicAuthString string
-	headers         []string
+	proxyHeader     string
 }
 
 type connectionHandler interface {
@@ -30,34 +31,30 @@ type connectionHandlerImpl struct {
 	port     int
 }
 
-/*SquidClient provides functionality to fetch squid metrics */
+// SquidClient provides functionality to fetch Squid metrics.
 type SquidClient interface {
 	GetCounters() (types.Counters, error)
 	GetServiceTimes() (types.Counters, error)
 	GetInfos() (types.Counters, error)
 }
 
-const (
-	requestProtocol = "GET cache_object://localhost/%s HTTP/1.0"
-)
-
 func buildBasicAuthString(login string, password string) string {
 	if len(login) == 0 {
 		return ""
-	} else {
-		return base64.StdEncoding.EncodeToString([]byte(login + ":" + password))
 	}
+
+	return base64.StdEncoding.EncodeToString([]byte(login + ":" + password))
 }
 
 type CacheObjectRequest struct {
-	Hostname string
-	Port     int
-	Login    string
-	Password string
-	Headers  []string
+	Hostname    string
+	Port        int
+	Login       string
+	Password    string
+	ProxyHeader string
 }
 
-/*NewCacheObjectClient initializes a new cache client */
+// NewCacheObjectClient initializes a new cache client.
 func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 	return &CacheObjectClient{
 		&connectionHandlerImpl{
@@ -65,7 +62,7 @@ func NewCacheObjectClient(cor *CacheObjectRequest) *CacheObjectClient {
 			cor.Port,
 		},
 		buildBasicAuthString(cor.Login, cor.Password),
-		cor.Headers,
+		cor.ProxyHeader,
 	}
 }
 
@@ -75,26 +72,26 @@ func (c *CacheObjectClient) readFromSquid(endpoint string) (*bufio.Reader, error
 	if err != nil {
 		return nil, err
 	}
-	r, err := get(conn, endpoint, c.basicAuthString, c.headers)
+	r, err := get(conn, endpoint, c.basicAuthString, c.proxyHeader)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if r.StatusCode != 200 {
-		return nil, fmt.Errorf("Non success code %d while fetching metrics", r.StatusCode)
+	if r.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non-success code %d while fetching metrics", r.StatusCode)
 	}
 
 	return bufio.NewReader(r.Body), err
 }
 
-/*GetCounters fetches counters from squid cache manager */
+// GetCounters fetches counters from Squid cache manager.
 func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	var counters types.Counters
 
 	reader, err := c.readFromSquid("counters")
 	if err != nil {
-		return nil, fmt.Errorf("error getting counters: %v", err)
+		return nil, fmt.Errorf("error getting counters: %w", err)
 	}
 
 	scanner := bufio.NewScanner(reader)
@@ -112,13 +109,13 @@ func (c *CacheObjectClient) GetCounters() (types.Counters, error) {
 	return counters, err
 }
 
-/*GetServiceTimes fetches service times from squid cache manager */
+// GetServiceTimes fetches service times from Squid cache manager.
 func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	var serviceTimes types.Counters
 
 	reader, err := c.readFromSquid("service_times")
 	if err != nil {
-		return nil, fmt.Errorf("error getting service times: %v", err)
+		return nil, fmt.Errorf("error getting service times: %w", err)
 	}
 
 	scanner := bufio.NewScanner(reader)
@@ -136,13 +133,13 @@ func (c *CacheObjectClient) GetServiceTimes() (types.Counters, error) {
 	return serviceTimes, err
 }
 
-/*GetInfos fetches info from squid cache manager */
+// GetInfos fetches info from Squid cache manager.
 func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 	var infos types.Counters
 
 	reader, err := c.readFromSquid("info")
 	if err != nil {
-		return nil, fmt.Errorf("error getting info: %v", err)
+		return nil, fmt.Errorf("error getting info: %w", err)
 	}
 
 	infoVarLabels := types.Counter{Key: "squid_info", Value: 1}
@@ -167,7 +164,6 @@ func (c *CacheObjectClient) GetInfos() (types.Counters, error) {
 						infoAvg60.Value = value
 						infos = append(infos, infoAvg60)
 					}
-
 				} else {
 					infoVarLabels.VarLabels = append(infoVarLabels.VarLabels, dis.VarLabels[0])
 				}
@@ -188,21 +184,30 @@ func (ch *connectionHandlerImpl) connect() (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprintf("%s:%d", ch.hostname, ch.port))
 }
 
-func get(conn net.Conn, path string, basicAuthString string, headers []string) (*http.Response, error) {
-	rBody := append(headers, []string{
-		fmt.Sprintf(requestProtocol, path),
-		"Host: localhost",
-		"User-Agent: squidclient/3.5.12",
-	}...)
+func get(conn net.Conn, path, basicAuthString, proxyHeader string) (*http.Response, error) {
+	var buf bytes.Buffer
 
-	if len(basicAuthString) > 0 {
-		rBody = append(rBody, "Proxy-Authorization: Basic "+basicAuthString)
-		rBody = append(rBody, "Authorization: Basic "+basicAuthString)
+	if proxyHeader != "" {
+		buf.WriteString(proxyHeader)
+		buf.WriteString("\r\n")
 	}
-	rBody = append(rBody, "Accept: */*", "\r\n")
-	request := strings.Join(rBody, "\r\n")
 
-	fmt.Fprint(conn, request)
+	fmt.Fprintf(&buf, "GET cache_object://localhost/%s HTTP/1.0\r\n", path)
+
+	h := http.Header{}
+	h.Add("Host", "localhost")
+	h.Add("User-Agent", "squidclient/3.5.12")
+	h.Add("Accept", "*/*")
+	if basicAuthString != "" {
+		h.Add("Proxy-Authorization", "Basic "+basicAuthString)
+		h.Add("Authorization", "Basic "+basicAuthString)
+	}
+	_ = h.Write(&buf)
+
+	buf.WriteString("\r\n")
+	if _, err := buf.WriteTo(conn); err != nil {
+		return nil, err
+	}
 
 	return http.ReadResponse(bufio.NewReader(conn), nil)
 }
@@ -281,7 +286,7 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 			// metrics with value as string need to save as label, format like "Squid Object Cache: Version 6.1" (the 3 first metrics)
 			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" {
 				if key == "Squid_Object_Cache" { // To clarify that the value is the squid version.
-					key = key + "_Version"
+					key += "_Version"
 					if slices := strings.Split(value, " "); len(slices) > 0 {
 						value = slices[1]
 					}
@@ -322,10 +327,9 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 					infoAvgCounter.VarLabels = append(infoAvgCounter.VarLabels, infoAvg5mVarLabel, infoAvg60mVarLabel)
 
 					return infoAvgCounter, nil
-				} else {
-					value = slices[0]
 				}
 
+				value = slices[0]
 			}
 
 			value = strings.Replace(value, "%", "", -1)
@@ -337,7 +341,7 @@ func decodeInfoStrings(line string) (types.Counter, error) {
 		}
 	} else {
 		// this catch the last 4 metrics format like "value metricName"
-		lineTrimed := strings.TrimSpace(line[:])
+		lineTrimed := strings.TrimSpace(line)
 
 		if idx := strings.Index(lineTrimed, " "); idx >= 0 {
 			key := strings.TrimSpace(lineTrimed[idx+1:])

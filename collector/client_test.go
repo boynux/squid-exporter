@@ -4,8 +4,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/boynux/squid-exporter/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/boynux/squid-exporter/types"
 )
 
 type mockConnectionHandler struct {
@@ -46,9 +48,11 @@ func TestReadFromSquid(t *testing.T) {
 	coc := &CacheObjectClient{
 		ch,
 		"",
-		[]string{},
+		"",
 	}
-	expected := "GET cache_object://localhost/test HTTP/1.0\r\nHost: localhost\r\nUser-Agent: squidclient/3.5.12\r\nAccept: */*\r\n\r\n"
+	// This test is overly brittle; the order of HTTP headers is not significant. Go sorts headers
+	// lexicographically when calling http.Header.Write().
+	expected := "GET cache_object://localhost/test HTTP/1.0\r\nAccept: */*\r\nHost: localhost\r\nUser-Agent: squidclient/3.5.12\r\n\r\n"
 	coc.readFromSquid("test")
 
 	assert.Equal(t, expected, string(ch.buffer))
@@ -74,7 +78,7 @@ func TestDecodeMetricStrings(t *testing.T) {
 		c, err := tc.d(tc.s)
 
 		if tc.e != "" {
-			assert.EqualError(t, err, tc.e)
+			require.EqualError(t, err, tc.e)
 		}
 		assert.Equal(t, tc.c, c)
 	}
