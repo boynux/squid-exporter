@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -11,29 +11,25 @@ import (
 	"github.com/boynux/squid-exporter/config"
 )
 
-func createProxyHeader(cfg *config.Config) string {
+func createProxyHeader(cfg *config.Config) (string, error) {
 	la := strings.Split(cfg.ListenAddress, ":")
 	if len(la) < 2 {
-		log.Printf("Cannot parse listen address (%s). Failed to create proxy header\n", cfg.ListenAddress)
-		return ""
+		return "", fmt.Errorf("cannot parse listen address %q", cfg.ListenAddress)
 	}
 
 	spt, err := strconv.Atoi(la[1])
 	if err != nil {
-		log.Printf("Failed to create proxy header: %v\n", err.Error())
-		return ""
+		return "", fmt.Errorf("cannot parse listen port: %w", err)
 	}
 
 	sip, err := net.LookupIP(la[0])
 	if err != nil {
-		log.Printf("Failed to create proxy header: %v\n", err.Error())
-		return ""
+		return "", fmt.Errorf("cannot resolve listen IP address: %w", err)
 	}
 
 	dip, err := net.LookupIP(cfg.SquidHostname)
 	if err != nil {
-		log.Printf("Failed to create proxy header: %v\n", err.Error())
-		return ""
+		return "", fmt.Errorf("cannot resolve Squid host: %w", err)
 	}
 
 	ph := &proxyproto.Header{
@@ -44,19 +40,18 @@ func createProxyHeader(cfg *config.Config) string {
 			IP:   sip[0],
 			Port: spt,
 		},
-
 		DestinationAddr: &net.TCPAddr{
 			IP:   dip[0],
 			Port: cfg.SquidPort,
 		},
 	}
-	phs, err := ph.Format()
 
+	phs, err := ph.Format()
 	if err != nil {
-		log.Printf("Failed to create proxy header: %v\n", err.Error())
+		return "", fmt.Errorf("cannot create proxy header: %w", err)
 	}
 
 	// proxyproto adds crlf to the end of the header string, but we will add this later
 	// we are triming it here.
-	return strings.TrimSuffix(string(phs), "\r\n")
+	return strings.TrimSuffix(string(phs), "\r\n"), nil
 }
