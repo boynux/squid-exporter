@@ -120,14 +120,23 @@ Features:
 FAQ:
 --------
 
-- Q: Metrics are not reported by exporter
-- A: That usually means the exporter cannot reach squid server or the config manager permissions are not set corretly. To debug and mitigate:
-  - First make sure the exporter service can reach to squid server IP Address (you can use telnet to test that)
-  - Make sure you allow exporter to query the squid server in config you will need something like this (`172.20.0.0/16` is the network for exporter, you can also use a single IP if needed):
+- Q: Which versions of Squid are supported?
+- A: Squid version 3.2.0.10 and later.
+
+- Q: Why are no Squid metrics reported by the exporter?
+- A: This usually means that the exporter cannot reach the Squid server, or that the cachemgr ACLs
+     are incorrect. To debug and mitigate:
+  - First make sure that the host running the exporter can access the Squid cachemgr URL, e.g.:
+    `curl http://localhost:3128/squid-internal-mgr/info`
+
+  - If that fails, verify that the Squid ACL configuration allows the exporter host to access the
+    cachemgr. In the following example, a custom `prometheus` ACL is defined to allow cachemgr
+    endpoint access from outside the Squid host, via the network (use with caution).
   ```
-  #http_access allow manager localhost
-  acl prometheus src 172.20.0.0/16
-  http_access allow manager prometheus
+  acl prometheus src 192.0.2.0/24
+  http_access allow localhost manager
+  http_access allow prometheus manager
+  http_access deny manager
   ```
 
 - Q: Why `process_open_fds` metric is not exported?
