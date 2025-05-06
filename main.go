@@ -35,7 +35,10 @@ func main() {
 	proxyHeader := ""
 
 	if cfg.UseProxyHeader {
-		proxyHeader = createProxyHeader(cfg)
+		var err error
+		if proxyHeader, err = createProxyHeader(cfg); err != nil {
+			log.Println("Could not create proxy header: ", err)
+		}
 	}
 
 	log.Println("Scraping metrics from", fmt.Sprintf("%s:%d", cfg.SquidHostname, cfg.SquidPort))
