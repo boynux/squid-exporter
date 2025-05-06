@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -53,7 +54,7 @@ func New(c *CollectorConfig) *Exporter {
 	infos = generateSquidInfos(c.Labels.Keys)
 
 	return &Exporter{
-		NewCacheObjectClient(c.Hostname, c.Port, c.Login, c.Password, c.ProxyHeader),
+		NewCacheObjectClient(fmt.Sprintf("http://%s:%d/squid-internal-mgr/", c.Hostname, c.Port), c.Login, c.Password, c.ProxyHeader),
 
 		c.Hostname,
 		c.Port,

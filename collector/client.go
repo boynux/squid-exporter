@@ -27,10 +27,10 @@ type SquidClient interface {
 	GetInfos() (types.Counters, error)
 }
 
-/*NewCacheObjectClient initializes a new cache client */
-func NewCacheObjectClient(hostname string, port int, username, password, proxyHeader string) *CacheObjectClient {
+// NewCacheObjectClient initializes a new cache client.
+func NewCacheObjectClient(baseURL, username, password, proxyHeader string) *CacheObjectClient {
 	return &CacheObjectClient{
-		fmt.Sprintf("http://%s:%d/squid-internal-mgr/", hostname, port),
+		baseURL,
 		username,
 		password,
 		proxyHeader,
