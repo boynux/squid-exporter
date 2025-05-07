@@ -1,4 +1,4 @@
-package types
+package collector
 
 // VarLabel maps key value Prometheus labels.
 type VarLabel struct {
