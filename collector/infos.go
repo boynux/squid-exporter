@@ -70,10 +70,10 @@ func generateSquidInfos(labels []string) descMap {
 		key := info.Section
 		name := prometheus.BuildFQName(namespace,
 			"info",
-			strings.Replace(info.Section, "%", "pct", -1))
+			strings.ReplaceAll(info.Section, "%", "pct"))
 
 		if info.Description == "" {
-			description = strings.Replace(info.Section, "_", " ", -1)
+			description = strings.ReplaceAll(info.Section, "_", " ")
 		} else {
 			description = info.Description
 		}

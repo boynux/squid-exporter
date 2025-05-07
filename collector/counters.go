@@ -52,7 +52,7 @@ func generateSquidCounters(labels []string) descMap {
 	for _, counter := range squidCounters {
 		key := counter.Section + "." + counter.Counter
 		name := prometheus.BuildFQName(namespace,
-			strings.Replace(counter.Section, ".", "_", -1),
+			strings.ReplaceAll(counter.Section, ".", "_"),
 			counter.Counter+"_"+counter.Suffix)
 
 		counters[key] = prometheus.NewDesc(

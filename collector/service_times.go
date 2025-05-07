@@ -121,12 +121,12 @@ func generateSquidServiceTimes(labels []string) descMap {
 		if serviceTime.Counter != "" {
 			key = serviceTime.Section + "_" + serviceTime.Counter + "_" + serviceTime.Suffix
 			name = prometheus.BuildFQName(namespace,
-				strings.Replace(serviceTime.Section, ".", "_", -1),
+				strings.ReplaceAll(serviceTime.Section, ".", "_"),
 				serviceTime.Counter+"_"+serviceTime.Suffix)
 		} else {
 			key = serviceTime.Section + "_" + serviceTime.Suffix
 			name = prometheus.BuildFQName(namespace,
-				strings.Replace(serviceTime.Section, ".", "_", -1),
+				strings.ReplaceAll(serviceTime.Section, ".", "_"),
 				serviceTime.Suffix)
 		}
 
