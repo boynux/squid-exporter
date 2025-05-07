@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 
 	kitlog "github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
@@ -51,17 +49,7 @@ func main() {
 
 	if cfg.Pidfile != "" {
 		procExporter := collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
-			PidFn: func() (int, error) {
-				content, err := os.ReadFile(cfg.Pidfile)
-				if err != nil {
-					return 0, fmt.Errorf("cannot read pid file %q: %w", cfg.Pidfile, err)
-				}
-				value, err := strconv.Atoi(strings.TrimSpace(string(content)))
-				if err != nil {
-					return 0, fmt.Errorf("cannot parse pid file %q: %w", cfg.Pidfile, err)
-				}
-				return value, nil
-			},
+			PidFn:     prometheus.NewPidFileFn(cfg.Pidfile),
 			Namespace: "squid",
 		})
 		prometheus.MustRegister(procExporter)
