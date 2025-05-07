@@ -185,9 +185,10 @@ func decodeServiceTimeStrings(line string) (Counter, error) {
 			if len(line) > equal {
 				value = strings.TrimSpace(line[equal+1:])
 			}
-			key = strings.ReplaceAll(key, " ", "_")
-			key = strings.ReplaceAll(key, "(", "")
-			key = strings.ReplaceAll(key, ")", "")
+
+			// Replace spaces with underscores, and strip () chars.
+			replacer := strings.NewReplacer(" ", "_", "(", "", ")", "")
+			key = replacer.Replace(key)
 
 			if equalTwo := strings.Index(value, "%"); equalTwo >= 0 {
 				if keyTwo := strings.TrimSpace(value[:equalTwo]); len(keyTwo) > 0 {
@@ -218,11 +219,10 @@ func decodeInfoStrings(line string) (Counter, error) {
 			if len(line) > idx {
 				value = strings.TrimSpace(line[idx+1:])
 			}
-			key = strings.ReplaceAll(key, " ", "_")
-			key = strings.ReplaceAll(key, "(", "")
-			key = strings.ReplaceAll(key, ")", "")
-			key = strings.ReplaceAll(key, ",", "")
-			key = strings.ReplaceAll(key, "/", "")
+
+			// Replace spaces with underscores, and strip (),/ chars.
+			replacer := strings.NewReplacer(" ", "_", "(", "", ")", "", ",", "", "/", "")
+			key = replacer.Replace(key)
 
 			// metrics with value as string need to save as label, format like "Squid Object Cache: Version 6.1" (the 3 first metrics)
 			if key == "Squid_Object_Cache" || key == "Build_Info" || key == "Service_Name" {
@@ -247,15 +247,18 @@ func decodeInfoStrings(line string) (Counter, error) {
 			// Remove additional information in value metric
 			if slices := strings.Split(value, " "); len(slices) > 0 {
 				if slices[0] == "5min:" && slices[2] == "60min:" { // catch metrics with avg in 5min and 60min format like "Hits as % of bytes sent: 5min: -0.0%, 60min: -0.0%"
-					infoAvg5mVarLabel := VarLabel{Key: slices[0], Value: slices[1]}
-					infoAvg5mVarLabel.Key = strings.ReplaceAll(infoAvg5mVarLabel.Key, ":", "")
-					infoAvg5mVarLabel.Value = strings.ReplaceAll(infoAvg5mVarLabel.Value, "%", "")
-					infoAvg5mVarLabel.Value = strings.ReplaceAll(infoAvg5mVarLabel.Value, ",", "")
+					// Strip %-signs and commas.
+					replacer := strings.NewReplacer("%", "", ",", "")
 
-					infoAvg60mVarLabel := VarLabel{Key: slices[2], Value: slices[3]}
-					infoAvg60mVarLabel.Key = strings.ReplaceAll(infoAvg60mVarLabel.Key, ":", "")
-					infoAvg60mVarLabel.Value = strings.ReplaceAll(infoAvg60mVarLabel.Value, "%", "")
-					infoAvg60mVarLabel.Value = strings.ReplaceAll(infoAvg60mVarLabel.Value, ",", "")
+					infoAvg5mVarLabel := VarLabel{
+						Key:   strings.ReplaceAll(slices[0], ":", ""),
+						Value: replacer.Replace(slices[1]),
+					}
+
+					infoAvg60mVarLabel := VarLabel{
+						Key:   strings.ReplaceAll(slices[2], ":", ""),
+						Value: replacer.Replace(slices[3]),
+					}
 
 					infoAvgCounter := Counter{
 						Key:       key,
@@ -268,8 +271,9 @@ func decodeInfoStrings(line string) (Counter, error) {
 				value = slices[0]
 			}
 
-			value = strings.ReplaceAll(value, "%", "")
-			value = strings.ReplaceAll(value, ",", "")
+			// Strip %-signs and commas.
+			replacer = strings.NewReplacer("%", "", ",", "")
+			value = replacer.Replace(value)
 
 			if i, err := strconv.ParseFloat(value, 64); err == nil {
 				return Counter{Key: key, Value: i}, nil
@@ -281,8 +285,10 @@ func decodeInfoStrings(line string) (Counter, error) {
 
 		if idx := strings.Index(lineTrimed, " "); idx >= 0 {
 			key := strings.TrimSpace(lineTrimed[idx+1:])
-			key = strings.ReplaceAll(key, " ", "_")
-			key = strings.ReplaceAll(key, "-", "_")
+
+			// Replace spaces and hyphens with underscores.
+			replacer := strings.NewReplacer(" ", "_", "-", "_")
+			key = replacer.Replace(key)
 
 			value := strings.TrimSpace(lineTrimed[:idx])
 
