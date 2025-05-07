@@ -6,13 +6,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type squidInfos struct {
+type squidInfo struct {
 	Section     string
 	Description string
 	Unit        string
 }
 
-var squidInfoss = []squidInfos{
+var squidInfos = []squidInfo{
 	{"Number_of_clients_accessing_cache", "", "number"},
 	{"Number_of_HTTP_requests_received", "", "number"},
 	{"Number_of_ICP_messages_received", "", "number"},
@@ -64,23 +64,20 @@ var squidInfoss = []squidInfos{
 func generateSquidInfos(labels []string) descMap {
 	infos := descMap{}
 
-	for i := range squidInfoss {
-		info := squidInfoss[i]
-
-		var key string
-		var name string
+	for _, info := range squidInfos {
 		var description string
 
-		key = info.Section
-		name = prometheus.BuildFQName(namespace, "info", strings.Replace(info.Section, "%", "pct", -1))
+		key := info.Section
+		name := prometheus.BuildFQName(namespace,
+			"info",
+			strings.ReplaceAll(info.Section, "%", "pct"))
 
 		if info.Description == "" {
-			description = strings.Replace(info.Section, "_", " ", -1)
+			description = strings.ReplaceAll(info.Section, "_", " ")
 		} else {
 			description = info.Description
 		}
-
-		description = description + " in " + info.Unit
+		description += " in " + info.Unit
 
 		infos[key] = prometheus.NewDesc(
 			name,

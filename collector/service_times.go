@@ -1,20 +1,19 @@
 package collector
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type squidServiceTimes struct {
+type squidServiceTime struct {
 	Section     string
 	Counter     string
 	Suffix      string
 	Description string
 }
 
-var squidServiceTimess = []squidServiceTimes{
+var squidServiceTimes = []squidServiceTime{
 	{"HTTP_Requests", "All", "5", "Service Time Percentiles 5min"},
 	{"HTTP_Requests", "All", "10", "Service Time Percentiles 5min"},
 	{"HTTP_Requests", "All", "15", "Service Time Percentiles 5min"},
@@ -116,18 +115,18 @@ var squidServiceTimess = []squidServiceTimes{
 func generateSquidServiceTimes(labels []string) descMap {
 	serviceTimes := descMap{}
 
-	for i := range squidServiceTimess {
-		serviceTime := squidServiceTimess[i]
-
+	for _, serviceTime := range squidServiceTimes {
 		var key, name string
 
 		if serviceTime.Counter != "" {
-			key = fmt.Sprintf("%s_%s_%s", serviceTime.Section, serviceTime.Counter, serviceTime.Suffix)
-			name = prometheus.BuildFQName(namespace, strings.Replace(serviceTime.Section, ".", "_", -1),
-				fmt.Sprintf("%s_%s", serviceTime.Counter, serviceTime.Suffix))
+			key = serviceTime.Section + "_" + serviceTime.Counter + "_" + serviceTime.Suffix
+			name = prometheus.BuildFQName(namespace,
+				strings.ReplaceAll(serviceTime.Section, ".", "_"),
+				serviceTime.Counter+"_"+serviceTime.Suffix)
 		} else {
-			key = fmt.Sprintf("%s_%s", serviceTime.Section, serviceTime.Suffix)
-			name = prometheus.BuildFQName(namespace, strings.Replace(serviceTime.Section, ".", "_", -1),
+			key = serviceTime.Section + "_" + serviceTime.Suffix
+			name = prometheus.BuildFQName(namespace,
+				strings.ReplaceAll(serviceTime.Section, ".", "_"),
 				serviceTime.Suffix)
 		}
 

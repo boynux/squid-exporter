@@ -1,7 +1,6 @@
 package collector
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -50,12 +49,14 @@ var squidCounters = []squidCounter{
 func generateSquidCounters(labels []string) descMap {
 	counters := descMap{}
 
-	for i := range squidCounters {
-		counter := squidCounters[i]
+	for _, counter := range squidCounters {
+		key := counter.Section + "." + counter.Counter
+		name := prometheus.BuildFQName(namespace,
+			strings.ReplaceAll(counter.Section, ".", "_"),
+			counter.Counter+"_"+counter.Suffix)
 
-		counters[fmt.Sprintf("%s.%s", counter.Section, counter.Counter)] = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, strings.Replace(counter.Section, ".", "_", -1),
-				fmt.Sprintf("%s_%s", counter.Counter, counter.Suffix)),
+		counters[key] = prometheus.NewDesc(
+			name,
 			counter.Description,
 			labels, nil,
 		)
