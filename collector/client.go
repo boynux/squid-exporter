@@ -193,7 +193,7 @@ func decodeServiceTimeStrings(line string) (Counter, error) {
 					if len(value) > equalTwo {
 						value = strings.Split(strings.TrimSpace(value[equalTwo+1:]), " ")[0]
 					}
-					key = key + "_" + keyTwo
+					key += "_" + keyTwo
 				}
 			}
 
@@ -231,13 +231,13 @@ func decodeInfoStrings(line string) (Counter, error) {
 						value = slices[1]
 					}
 				}
-				var infoVarLabel VarLabel
-				infoVarLabel.Key = key
-				infoVarLabel.Value = value
 
-				var infoCounter Counter
-				infoCounter.Key = key
-				infoCounter.VarLabels = append(infoCounter.VarLabels, infoVarLabel)
+				infoVarLabel := VarLabel{Key: key, Value: value}
+				infoCounter := Counter{
+					Key:       key,
+					VarLabels: []VarLabel{infoVarLabel},
+				}
+
 				return infoCounter, nil
 			} else if key == "Start_Time" || key == "Current_Time" { // discart this metrics
 				return Counter{}, nil
@@ -246,25 +246,20 @@ func decodeInfoStrings(line string) (Counter, error) {
 			// Remove additional information in value metric
 			if slices := strings.Split(value, " "); len(slices) > 0 {
 				if slices[0] == "5min:" && slices[2] == "60min:" { // catch metrics with avg in 5min and 60min format like "Hits as % of bytes sent: 5min: -0.0%, 60min: -0.0%"
-					var infoAvg5mVarLabel VarLabel
-					infoAvg5mVarLabel.Key = slices[0]
-					infoAvg5mVarLabel.Value = slices[1]
-
+					infoAvg5mVarLabel := VarLabel{Key: slices[0], Value: slices[1]}
 					infoAvg5mVarLabel.Key = strings.Replace(infoAvg5mVarLabel.Key, ":", "", -1)
 					infoAvg5mVarLabel.Value = strings.Replace(infoAvg5mVarLabel.Value, "%", "", -1)
 					infoAvg5mVarLabel.Value = strings.Replace(infoAvg5mVarLabel.Value, ",", "", -1)
 
-					var infoAvg60mVarLabel VarLabel
-					infoAvg60mVarLabel.Key = slices[2]
-					infoAvg60mVarLabel.Value = slices[3]
-
+					infoAvg60mVarLabel := VarLabel{Key: slices[2], Value: slices[3]}
 					infoAvg60mVarLabel.Key = strings.Replace(infoAvg60mVarLabel.Key, ":", "", -1)
 					infoAvg60mVarLabel.Value = strings.Replace(infoAvg60mVarLabel.Value, "%", "", -1)
 					infoAvg60mVarLabel.Value = strings.Replace(infoAvg60mVarLabel.Value, ",", "", -1)
 
-					var infoAvgCounter Counter
-					infoAvgCounter.Key = key
-					infoAvgCounter.VarLabels = append(infoAvgCounter.VarLabels, infoAvg5mVarLabel, infoAvg60mVarLabel)
+					infoAvgCounter := Counter{
+						Key:       key,
+						VarLabels: []VarLabel{infoAvg5mVarLabel, infoAvg60mVarLabel},
+					}
 
 					return infoAvgCounter, nil
 				}
