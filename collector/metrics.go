@@ -26,13 +26,11 @@ var (
 
 // Exporter entry point to Squid exporter.
 type Exporter struct {
-	client SquidClient
-
+	client   SquidClient
 	hostname string
 	port     int
-
-	labels config.Labels
-	up     *prometheus.GaugeVec
+	labels   config.Labels
+	up       *prometheus.GaugeVec
 }
 
 type CollectorConfig struct {
@@ -55,10 +53,8 @@ func New(c *CollectorConfig) *Exporter {
 
 	return &Exporter{
 		NewCacheObjectClient(fmt.Sprintf("http://%s:%d/squid-internal-mgr/", c.Hostname, c.Port), c.Login, c.Password, c.ProxyHeader),
-
 		c.Hostname,
 		c.Port,
-
 		c.Labels,
 		prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -94,9 +90,9 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 
 	if err == nil {
 		e.up.With(prometheus.Labels{"host": e.hostname}).Set(1)
-		for i := range insts {
-			if d, ok := counters[insts[i].Key]; ok {
-				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, insts[i].Value, e.labels.Values...)
+		for _, inst := range insts {
+			if d, ok := counters[inst.Key]; ok {
+				c <- prometheus.MustNewConstMetric(d, prometheus.CounterValue, inst.Value, e.labels.Values...)
 			}
 		}
 	} else {
@@ -108,9 +104,9 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 		insts, err = e.client.GetServiceTimes()
 
 		if err == nil {
-			for i := range insts {
-				if d, ok := serviceTimes[insts[i].Key]; ok {
-					c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, insts[i].Value, e.labels.Values...)
+			for _, inst := range insts {
+				if d, ok := serviceTimes[inst.Key]; ok {
+					c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, inst.Value, e.labels.Values...)
 				}
 			}
 		} else {
@@ -120,17 +116,17 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 
 	insts, err = e.client.GetInfos()
 	if err == nil {
-		for i := range insts {
-			if d, ok := infos[insts[i].Key]; ok {
-				c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, insts[i].Value, e.labels.Values...)
-			} else if insts[i].Key == "squid_info" {
-				infoMetricName := prometheus.BuildFQName(namespace, "info", "service")
-				var labelsKeys []string
-				var labelsValues []string
+		for _, inst := range insts {
+			if d, ok := infos[inst.Key]; ok {
+				c <- prometheus.MustNewConstMetric(d, prometheus.GaugeValue, inst.Value, e.labels.Values...)
+			} else if inst.Key == "squid_info" {
+				var labelsKeys, labelsValues []string
 
-				for z := range insts[i].VarLabels {
-					labelsKeys = append(labelsKeys, insts[i].VarLabels[z].Key)
-					labelsValues = append(labelsValues, insts[i].VarLabels[z].Value)
+				infoMetricName := prometheus.BuildFQName(namespace, "info", "service")
+
+				for _, vl := range inst.VarLabels {
+					labelsKeys = append(labelsKeys, vl.Key)
+					labelsValues = append(labelsValues, vl.Value)
 				}
 
 				infoDesc := prometheus.NewDesc(
@@ -139,7 +135,7 @@ func (e *Exporter) Collect(c chan<- prometheus.Metric) {
 					labelsKeys,
 					nil,
 				)
-				c <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, insts[i].Value, labelsValues...)
+				c <- prometheus.MustNewConstMetric(infoDesc, prometheus.GaugeValue, inst.Value, labelsValues...)
 			}
 		}
 	} else {
