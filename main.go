@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
-	kitlog "github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
@@ -96,7 +96,7 @@ func main() {
 		WebSystemdSocket:   &systemdSocket,
 		WebConfigFile:      &cfg.WebConfigPath,
 	}
-	logger := kitlog.NewLogfmtLogger(kitlog.StdlibWriter{})
+	logger := slog.Default()
 
 	server := &http.Server{}
 	log.Fatal(web.ListenAndServe(server, toolkitFlags, logger))

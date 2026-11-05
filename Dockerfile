@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine as build
+FROM golang:1.27.3-alpine AS build
 
 ARG TARGETPLATFORM
 RUN echo "Building for ${TARGETPLATFORM}"
@@ -13,7 +13,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -a -ldflags '-extldflags "-s -w -static"' -o /squid-exporter .
 
 
-FROM gcr.io/distroless/static:nonroot as final
+FROM gcr.io/distroless/static:nonroot AS final
 
 LABEL org.opencontainers.image.title="Squid Exporter"
 LABEL org.opencontainers.image.description="This is a Docker image for Squid Prometheus Exporter."
